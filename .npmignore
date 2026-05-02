@@ -1,0 +1,13 @@
+dist/*.map
+src/
+tests/
+demo/
+website/
+examples/
+.claude/
+.github/
+node_modules/
+*.config.ts
+*.config.mjs
+.prettierrc
+.releaserc
