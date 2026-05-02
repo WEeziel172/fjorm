@@ -1,4 +1,4 @@
-# 🌊 Fjorm
+![Fjorm](assets/header_1.png)
 
 > Modular drag-and-drop form builder for React — bring your own components.
 
@@ -118,11 +118,11 @@ The `editor` property on each registration tells Fjorm what sidebar editor field
 
 Ready-to-run examples for three major component libraries:
 
-| Library | Directory | Dev Command |
-|---------|-----------|-------------|
-| **Ant Design v5** | `examples/antd/` | `npm run dev` |
-| **Material UI v5** | `examples/mui/` | `npm run dev` |
-| **Mantine v7** | `examples/mantine/` | `npm run dev` |
+| Library            | Directory           | Dev Command   |
+| ------------------ | ------------------- | ------------- |
+| **Ant Design v5**  | `examples/antd/`    | `npm run dev` |
+| **Material UI v5** | `examples/mui/`     | `npm run dev` |
+| **Mantine v7**     | `examples/mantine/` | `npm run dev` |
 
 Each example includes a `FormWrapper`, four field types (Header, Paragraph, TextInput, SelectInput), and a ready-to-run Vite setup.
 
@@ -150,16 +150,17 @@ Each registered field type follows this shape:
 
 ```ts
 interface FormComponentRegistration {
-  key: string                           // unique identifier, e.g. "TextInput"
-  settings: FormComponentSettings       // default field settings (label, name, …)
-  icon: ComponentType                   // icon shown in the toolbox
-  component: ComponentType<FormComponentProps>  // display component
-  editor: ComponentType<EditorProps> | Record<string, string>  // editor definition
-  options?: FormComponentOption[]       // default options (for selects)
+  key: string // unique identifier, e.g. "TextInput"
+  settings: FormComponentSettings // default field settings (label, name, …)
+  icon: ComponentType // icon shown in the toolbox
+  component: ComponentType<FormComponentProps> // display component
+  editor: ComponentType<EditorProps> | Record<string, string> // editor definition
+  options?: FormComponentOption[] // default options (for selects)
 }
 ```
 
 **Two editor modes:**
+
 - **Function** — pass any React component receiving `EditorProps`
 - **Object** — declarative key→editor-type mapping, e.g. `{ label: 'EditorInput', required: 'EditorCheckbox' }`. Available editor types: `EditorInput`, `EditorCheckbox`, `EditorTextArea`, `EditorOptions`.
 
@@ -167,24 +168,23 @@ interface FormComponentRegistration {
 
 ```tsx
 <FormBuilder
-  ref={builderRef}                   // FormBuilderHandle — getFormItems(), reset()
-  config={config}                    // Config instance (required)
-  form={{ component: FormWrapper }}  // custom form wrapper for preview mode
-  initialData={savedForm}            // pre-populate the builder with serialized data
-  onChange={(structure) => {}}      // called when form structure changes (drag, edit, delete)
-  onSubmit={(formData) => {}}       // called when the default preview form is submitted
+  ref={builderRef} // FormBuilderHandle — getFormItems(), reset()
+  config={config} // Config instance (required)
+  form={{ component: FormWrapper }} // custom form wrapper for preview mode
+  initialData={savedForm} // pre-populate the builder with serialized data
+  onChange={(structure) => {}} // called when form structure changes (drag, edit, delete)
+  onSubmit={(formData) => {}} // called when the default preview form is submitted
 />
 ```
 
 > **Note:** `onSubmit` only fires for the default `<form>` (no custom wrapper). When using a custom `form.component`, the wrapper handles its own submission — wire your submit logic inside the wrapper instead.
 
-
 **Imperative handle** — access via `useRef<FormBuilderHandle>`:
 
 ```ts
 interface FormBuilderHandle {
-  getFormItems(): SerializedFormItem[]   // current form structure as JSON
-  reset(): void                          // clear all form items
+  getFormItems(): SerializedFormItem[] // current form structure as JSON
+  reset(): void // clear all form items
 }
 ```
 
@@ -194,9 +194,9 @@ Standalone read-only form renderer (used internally by `FormBuilder` in preview 
 
 ```tsx
 <FormDisplay
-  data={serializedItems}   // SerializedFormItem[]
-  config={config}          // Config instance
-  form={formWrapper}       // optional custom form wrapper
+  data={serializedItems} // SerializedFormItem[]
+  config={config} // Config instance
+  form={formWrapper} // optional custom form wrapper
 />
 ```
 
@@ -216,23 +216,30 @@ const formItems: FormItem[] = deserializeFormItems(json, config)
 
 The public API is intentionally small. Build your own display components (see Adapter Pattern above) — the library provides the framework, not the fields.
 
-| Export | Kind | Description |
-|--------|------|-------------|
-| `Config` | Class | Component registry |
-| `FormBuilder` | Component | Main builder UI (named export) |
-| `FormDisplay` | Component | Standalone read-only form renderer |
-| `formComponents` | Value | Default component definitions (Header, Paragraph, TextInput, SelectInput) |
-| `serializeFormItems` | Function | Convert form items to portable JSON |
-| `deserializeFormItems` | Function | Rehydrate JSON back to form items |
+| Export                 | Kind      | Description                                                               |
+| ---------------------- | --------- | ------------------------------------------------------------------------- |
+| `Config`               | Class     | Component registry                                                        |
+| `FormBuilder`          | Component | Main builder UI (named export)                                            |
+| `FormDisplay`          | Component | Standalone read-only form renderer                                        |
+| `formComponents`       | Value     | Default component definitions (Header, Paragraph, TextInput, SelectInput) |
+| `serializeFormItems`   | Function  | Convert form items to portable JSON                                       |
+| `deserializeFormItems` | Function  | Rehydrate JSON back to form items                                         |
 
 **Types:**
 
 ```ts
 import type {
-  FormComponentSettings, FormComponentOption, EditorProps,
-  FormComponentProps, FormComponentRegistration, FormItem,
-  SerializedFormItem, FormConfig, EditorDefinition,
-  EditorChangePayload, FormBuilderHandle
+  FormComponentSettings,
+  FormComponentOption,
+  EditorProps,
+  FormComponentProps,
+  FormComponentRegistration,
+  FormItem,
+  SerializedFormItem,
+  FormConfig,
+  EditorDefinition,
+  EditorChangePayload,
+  FormBuilderHandle,
 } from 'fjorm'
 ```
 
@@ -345,22 +352,25 @@ const data: SerializedFormItem[] = [
 ```tsx
 function ListSwitcher({ settings, options, value, onChangeValue }: FormComponentProps) {
   const [selected, setSelected] = useState<Set<string>>(
-    new Set(Array.isArray(value) ? value as string[] : [])
+    new Set(Array.isArray(value) ? (value as string[]) : []),
   )
 
   function toggle(id: string) {
     const next = new Set(selected)
     next.has(id) ? next.delete(id) : next.add(id)
     setSelected(next)
-    onChangeValue?.(Array.from(next))   // push array up to the form
+    onChangeValue?.(Array.from(next)) // push array up to the form
   }
 
   return (
     <div>
       <label>{settings.label}</label>
-      {(options ?? []).map(item => (
-        <button key={item.id} onClick={() => toggle(item.id)}
-          style={{ background: selected.has(item.id) ? 'blue' : 'gray' }}>
+      {(options ?? []).map((item) => (
+        <button
+          key={item.id}
+          onClick={() => toggle(item.id)}
+          style={{ background: selected.has(item.id) ? 'blue' : 'gray' }}
+        >
           {item.title}
         </button>
       ))}
@@ -377,8 +387,12 @@ When the declarative editor object isn't enough, compose a custom editor from Fj
 
 ```tsx
 import {
-  EditorInput, EditorCheckbox, EditorTextArea, EditorOptions,
-  FormComponentEditorContainer, useEditorChange,
+  EditorInput,
+  EditorCheckbox,
+  EditorTextArea,
+  EditorOptions,
+  FormComponentEditorContainer,
+  useEditorChange,
   type EditorProps,
 } from 'fjorm'
 
@@ -387,12 +401,27 @@ function MyCustomEditor({ settings, options, onValueChange, onChangeOptions }: E
 
   return (
     <FormComponentEditorContainer>
-      <EditorInput   settings={settings} name="label"   label="Label"       handleOnChange={handleOnChange} />
-      <EditorInput   settings={settings} name="name"    label="Field name"  handleOnChange={handleOnChange} />
-      <EditorCheckbox settings={settings} name="required" label="Required"  handleOnChange={handleOnChange} />
-      <EditorOptions options={options} settings={settings} name="options" label="Options"
+      <EditorInput settings={settings} name="label" label="Label" handleOnChange={handleOnChange} />
+      <EditorInput
+        settings={settings}
+        name="name"
+        label="Field name"
         handleOnChange={handleOnChange}
-        handleOnChangeOptions={onChangeOptions ?? (() => {})} />
+      />
+      <EditorCheckbox
+        settings={settings}
+        name="required"
+        label="Required"
+        handleOnChange={handleOnChange}
+      />
+      <EditorOptions
+        options={options}
+        settings={settings}
+        name="options"
+        label="Options"
+        handleOnChange={handleOnChange}
+        handleOnChangeOptions={onChangeOptions ?? (() => {})}
+      />
     </FormComponentEditorContainer>
   )
 }
@@ -403,20 +432,20 @@ const registration: FormComponentRegistration = {
   settings: { label: 'My Component', name: 'myComponent' },
   icon: MyIcon,
   component: MyDisplayComponent,
-  editor: MyCustomEditor,   // function form instead of declarative object
+  editor: MyCustomEditor, // function form instead of declarative object
 }
 ```
 
 **Available primitives:**
 
-| Export | Purpose |
-|---|---|
-| `EditorInput` | Text input (`label`, `placeholder`, `name` fields) |
-| `EditorCheckbox` | Boolean toggle (`required` field) |
-| `EditorTextArea` | Multi-line text (`content` field) |
-| `EditorOptions` | Add/remove/edit option rows (title + value) |
-| `FormComponentEditorContainer` | Layout wrapper with consistent padding |
-| `useEditorChange` | Hook — converts `EditorChangePayload` → `{ name, value }` for `onValueChange` |
+| Export                         | Purpose                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `EditorInput`                  | Text input (`label`, `placeholder`, `name` fields)                            |
+| `EditorCheckbox`               | Boolean toggle (`required` field)                                             |
+| `EditorTextArea`               | Multi-line text (`content` field)                                             |
+| `EditorOptions`                | Add/remove/edit option rows (title + value)                                   |
+| `FormComponentEditorContainer` | Layout wrapper with consistent padding                                        |
+| `useEditorChange`              | Hook — converts `EditorChangePayload` → `{ name, value }` for `onValueChange` |
 
 The declarative object form (`{ label: 'EditorInput', required: 'EditorCheckbox' }`) is just syntactic sugar — `EditorCompiler` maps those keys to these same primitives. Use the function form when you need custom layout, conditional fields, or validation beyond what the declarative form supports.
 
