@@ -3,12 +3,15 @@
 > Modular drag-and-drop form builder for React — bring your own components.
 
 [![CI](https://github.com/WEeziel172/fjorm/actions/workflows/ci.yml/badge.svg)](https://github.com/WEeziel172/fjorm/actions/workflows/ci.yml)
+[![docs](https://img.shields.io/badge/docs-GitHub_Pages-34a853.svg?logo=github)](https://weeziel172.github.io/fjorm/)
 [![semantic-release](https://img.shields.io/badge/release-semantic--release-blue.svg?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178c6.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
 
 Fjorm lets you build visual, drag-and-drop form editors in React. Drag components from a toolbox onto a canvas, configure each field's properties in a sidebar editor, preview the live form, and serialize the result as JSON. The rendering layer is completely pluggable — use raw HTML inputs, Ant Design, MUI, Mantine, or your own design system.
+
+📖 **Full documentation:** [weeziel172.github.io/fjorm](https://weeziel172.github.io/fjorm/)
 
 <p align="center">
   <img src="https://img.shields.io/badge/drag_and_drop-@hello--pangea/dnd-ff69b4" alt="DnD">
@@ -36,7 +39,7 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 npm install fjorm
 ```
 
-Fjorm requires React 18+ and `@hello-pangea/dnd` (installed automatically as a dependency):
+Fjorm requires React 19+ and `@hello-pangea/dnd` (installed automatically as a dependency):
 
 ```bash
 npm install fjorm react react-dom
