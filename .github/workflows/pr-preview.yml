@@ -23,6 +23,10 @@ jobs:
         with:
           node-version: 22
           cache: yarn
+          cache-dependency-path: |
+            yarn.lock
+            website/yarn.lock
+            demo/yarn.lock
 
       - name: Install and build root package
         run: |
@@ -35,12 +39,29 @@ jobs:
           yarn install --frozen-lockfile
           VITE_BASE="/fjorm/pr-preview/${{ github.event.pull_request.number }}/demo/" yarn build
 
+      - name: Configure and build website
+        run: |
+          cd website
+          yarn install --frozen-lockfile
+          sed -i "s|baseUrl: '/fjorm/'|baseUrl: '/fjorm/pr-preview/${{ github.event.pull_request.number }}/docs/'|" docusaurus.config.ts
+          sed -i "s|https://weeziel172.github.io/fjorm/demo/|/fjorm/pr-preview/${{ github.event.pull_request.number }}/demo/|" docusaurus.config.ts
+          yarn build
+
       - name: Deploy preview to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./demo/dist
           destination_dir: pr-preview/${{ github.event.pull_request.number }}/demo
+          keep_files: true
+          commit_message: 'deploy: PR preview #${{ github.event.pull_request.number }}'
+
+      - name: Deploy website preview
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./website/build
+          destination_dir: pr-preview/${{ github.event.pull_request.number }}/docs
           keep_files: true
           commit_message: 'deploy: PR preview #${{ github.event.pull_request.number }}'
 
@@ -65,7 +86,10 @@ jobs:
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
-            const url = `https://WEeziel172.github.io/fjorm/pr-preview/${prNumber}/demo/`;
+            const demoUrl = `https://WEeziel172.github.io/fjorm/pr-preview/${prNumber}/demo/`;
+            const docsUrl = `https://WEeziel172.github.io/fjorm/pr-preview/${prNumber}/docs/`;
+
+            const body = `[PR #${prNumber} demo preview](${demoUrl})  \n[PR #${prNumber} docs preview](${docsUrl})`;
 
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
@@ -74,7 +98,7 @@ jobs:
             });
 
             const botComment = comments.find(c =>
-              c.user.type === 'Bot' && c.body.includes('PR preview deployed')
+              c.user.type === 'Bot' && c.body.includes('preview')
             );
 
             if (botComment) {
@@ -82,13 +106,13 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: `[PR #${prNumber} preview](${url})\n\n_(updated for latest commit)_`,
+                body: `${body}\n\n_(updated for latest commit)_`,
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
-                body: `[PR #${prNumber} preview](${url})`,
+                body,
               });
             }
