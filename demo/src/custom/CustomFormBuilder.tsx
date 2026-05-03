@@ -114,6 +114,17 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
       {/* Main area */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
         <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}>
+          <FormContainer
+            formItems={formItems}
+            placeholderProps={placeholderProps}
+            droppableId="list"
+            onEditFormItem={({ id }) => {
+              const item = findItem(id)
+              if (item) setEditingItem(item)
+            }}
+            onDeleteFormItem={({ id }) => deleteItem(id)}
+            onContainerMount={(el) => { containerRef.current = el }}
+          />
           {editingItem ? (
             <EditorToolBox
               currentEditor={currentEditor as FormItem}
@@ -129,17 +140,6 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
               droppableId="toolbox"
             />
           )}
-          <FormContainer
-            formItems={formItems}
-            placeholderProps={placeholderProps}
-            droppableId="list"
-            onEditFormItem={({ id }) => {
-              const item = findItem(id)
-              if (item) setEditingItem(item)
-            }}
-            onDeleteFormItem={({ id }) => deleteItem(id)}
-            onContainerMount={(el) => { containerRef.current = el }}
-          />
         </DragDropContext>
       </div>
     </div>
