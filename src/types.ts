@@ -49,7 +49,7 @@ export interface FormComponentRegistration<
 > {
   key: string
   settings: TSettings
-  icon: ComponentType
+  icon?: ComponentType
   component: ComponentType<FormComponentProps>
   editor: EditorDefinition
   options?: FormComponentOption[]

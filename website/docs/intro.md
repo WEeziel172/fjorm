@@ -16,7 +16,7 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 - **UI-framework agnostic** — register your own display components per field type
 - **JSON serialization** — export/import form structure as portable JSON
 - **TypeScript-first** — full type definitions for all APIs
-- **Lightweight** — peer-deps only: React 19+ and react-dom 19+; runtime deps: `@hello-pangea/dnd`, `react-icons`, `uuid`
+- **Lightweight** — peer-deps only: React 19+ and react-dom 19+; runtime deps: `@hello-pangea/dnd`, `uuid`
 
 ## Install
 
@@ -57,8 +57,8 @@ fjorm/
 ├── website/              # Docusaurus docs site
 ├── demo/                 # Vite + React demo app
 ├── examples/
-│   ├── antd/             # Ant Design v5
-│   ├── mui/              # Material UI v5
-│   └── mantine/          # Mantine v7
+│   ├── antd/             # Ant Design v6
+│   ├── mui/              # Material UI v9
+│   └── mantine/          # Mantine v9
 └── .github/workflows/    # CI/CD
 ```

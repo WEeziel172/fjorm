@@ -6,7 +6,7 @@
 [![docs](https://img.shields.io/badge/docs-GitHub_Pages-34a853.svg?logo=github)](https://weeziel172.github.io/fjorm/)
 [![semantic-release](https://img.shields.io/badge/release-semantic--release-blue.svg?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178c6.svg)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178c6.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
 
 **Fjorm** is a visual, drag-and-drop form builder and form designer for React 19+. Drag components from a toolbox onto a canvas, configure each field's properties in a sidebar editor, preview the live form, and serialize the result as JSON. The rendering layer is completely pluggable — use raw HTML inputs, Ant Design, MUI, Mantine, or your own design system. Perfect for building form editors, survey creators, page builders, and any tool that needs a visual form constructor.
@@ -29,7 +29,7 @@
 - **UI-framework agnostic** — register your own display components per field type
 - **JSON serialization** — export/import form structure as portable JSON
 - **TypeScript-first** — full type definitions for the component registry and all APIs
-- **Lightweight** — peer deps: React 19+, react-dom 19+; runtime deps: `@hello-pangea/dnd`, `react-icons`, `uuid`
+- **Lightweight** — peer deps: React 19+, react-dom 19+; runtime deps: `@hello-pangea/dnd`, `uuid`
 
 ---
 
@@ -39,7 +39,7 @@
 npm install fjorm
 ```
 
-Fjorm requires React 19+ and react-dom 19+ as peer dependencies. Runtime dependencies (`@hello-pangea/dnd`, `react-icons`, `uuid`) are installed automatically:
+Fjorm requires React 19+ and react-dom 19+ as peer dependencies. Runtime dependencies (`@hello-pangea/dnd`, `uuid`) are installed automatically:
 
 ```bash
 npm install fjorm react react-dom
@@ -120,9 +120,9 @@ Ready-to-run examples for three major component libraries. All examples are also
 
 | Library            | Directory           | Live Demo |
 | ------------------ | ------------------- | --------- |
-| **Ant Design v5**  | `examples/antd/`    | [Live](https://weeziel172.github.io/fjorm/examples/antd/) |
-| **Material UI v5** | `examples/mui/`     | [Live](https://weeziel172.github.io/fjorm/examples/mui/) |
-| **Mantine v7**     | `examples/mantine/` | [Live](https://weeziel172.github.io/fjorm/examples/mantine/) |
+| **Ant Design v6**  | `examples/antd/`    | [Live](https://weeziel172.github.io/fjorm/examples/antd/) |
+| **Material UI v9** | `examples/mui/`     | [Live](https://weeziel172.github.io/fjorm/examples/mui/) |
+| **Mantine v9**     | `examples/mantine/` | [Live](https://weeziel172.github.io/fjorm/examples/mantine/) |
 
 Each example includes a `FormWrapper`, several field types, editor definitions, and a ready-to-run Vite setup. The basic demo app is also available [live](https://weeziel172.github.io/fjorm/demo/).
 
@@ -341,27 +341,27 @@ import type {
 
 ```bash
 # Install dependencies
-npm install
+yarn install
 
 # Build the library (ESM + CJS + type declarations)
-npm run build
+yarn build
 
 # Watch mode
-npm run dev
+yarn dev
 
 # Run tests
-npm test
+yarn test
 
 # Run tests in watch mode
-npm run test:watch
+yarn test:watch
 
 # Run the demo app
-cd demo && npm run dev
+cd demo && yarn dev
 
 # Run an example app
-cd examples/antd && npm run dev
-cd examples/mui && npm run dev
-cd examples/mantine && npm run dev
+cd examples/antd && yarn dev
+cd examples/mui && yarn dev
+cd examples/mantine && yarn dev
 ```
 
 ### Releases
@@ -406,9 +406,9 @@ fjorm/
 │   └── unit/                 # 142 tests across 19 files
 ├── demo/                     # Vite + React demo app
 ├── examples/
-│   ├── antd/                 # Ant Design v5 integration
-│   ├── mui/                  # Material UI v5 integration
-│   └── mantine/             # Mantine v7 integration
+│   ├── antd/                 # Ant Design v6 integration
+│   ├── mui/                  # Material UI v9 integration
+│   └── mantine/             # Mantine v9 integration
 ├── tsup.config.ts            # library build config
 ├── vitest.config.ts          # test config
 └── tsconfig.json

@@ -7,11 +7,11 @@ export function ToolboxItem({
 }: {
   name: string
   style?: CSSProperties
-  icon: ComponentType
+  icon?: ComponentType
 }) {
   return (
     <div style={style} className="toolbox-item">
-      {Icon && <Icon />}
+      {Icon ? <Icon /> : null}
       {name}
     </div>
   )

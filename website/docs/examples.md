@@ -11,9 +11,9 @@ Ready-to-run example apps demonstrating Fjorm with three major React component l
 | Example | Live |
 |---|---|
 | Basic Demo | [weeziel172.github.io/fjorm/demo/](https://weeziel172.github.io/fjorm/demo/) |
-| Ant Design v5 | [weeziel172.github.io/fjorm/examples/antd/](https://weeziel172.github.io/fjorm/examples/antd/) |
-| Material UI v5 | [weeziel172.github.io/fjorm/examples/mui/](https://weeziel172.github.io/fjorm/examples/mui/) |
-| Mantine v7 | [weeziel172.github.io/fjorm/examples/mantine/](https://weeziel172.github.io/fjorm/examples/mantine/) |
+| Ant Design v6 | [weeziel172.github.io/fjorm/examples/antd/](https://weeziel172.github.io/fjorm/examples/antd/) |
+| Material UI v9 | [weeziel172.github.io/fjorm/examples/mui/](https://weeziel172.github.io/fjorm/examples/mui/) |
+| Mantine v9 | [weeziel172.github.io/fjorm/examples/mantine/](https://weeziel172.github.io/fjorm/examples/mantine/) |
 
 ## Run Locally
 
@@ -22,16 +22,16 @@ git clone https://github.com/WEeziel172/fjorm
 cd fjorm
 
 # Basic demo
-cd demo && npm install && npm run dev
+cd demo && yarn install && yarn dev
 
-# Ant Design v5
-cd examples/antd && npm install && npm run dev
+# Ant Design v6
+cd examples/antd && yarn install && yarn dev
 
-# Material UI v5
-cd examples/mui && npm install && npm run dev
+# Material UI v9
+cd examples/mui && yarn install && yarn dev
 
-# Mantine v7
-cd examples/mantine && npm install && npm run dev
+# Mantine v9
+cd examples/mantine && yarn install && yarn dev
 ```
 
 Each example includes:

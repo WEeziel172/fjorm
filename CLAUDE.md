@@ -5,16 +5,16 @@ fjorm is a modular, drag-and-drop form builder library for React 19+. MIT licens
 ## Build & Development
 
 ```bash
-npm run build          # tsup — ESM + CJS + DTS to dist/
-npm run dev            # tsup --watch
-npm test               # vitest run (jsdom, ~120 tests)
-npm run test:watch     # vitest watch mode
-npm run lint           # eslint src/ tests/
-npm run format         # prettier --write 'src/**/*.{ts,tsx,css}' 'tests/**/*.{ts,tsx}'
+yarn build          # tsup — ESM + CJS + DTS to dist/
+yarn dev            # tsup --watch
+yarn test           # vitest run (jsdom, ~120 tests)
+yarn test:watch     # vitest watch mode
+yarn lint           # eslint src/ tests/
+yarn format         # prettier --write 'src/**/*.{ts,tsx,css}' 'tests/**/*.{ts,tsx}'
 ```
 
-Demo: `cd demo && npm install && npm run dev`
-Website: `cd website && npm install && npm start`
+Demo: `cd demo && yarn install && yarn dev`
+Website: `cd website && yarn install && yarn start`
 
 ## Architecture
 
@@ -83,7 +83,7 @@ Key exports: `Config`, `FormBuilder`, `FormDisplay`, `FormContainer`, `ToolBox`,
 - `react` ^19.0.0
 - `react-dom` ^19.0.0
 
-Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `react-icons`, `uuid`.
+Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `uuid`.
 
 ## CI/CD
 
@@ -101,8 +101,8 @@ Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `react-icons`, `uuid`.
 ## Example Apps
 
 Three UI library integrations in `examples/`:
-- `antd/` — Ant Design v5 (React 19)
-- `mantine/` — Mantine v7 (10+ field types)
-- `mui/` — Material UI v5
+- `antd/` — Ant Design v6 (React 19)
+- `mantine/` — Mantine v9 (10+ field types)
+- `mui/` — Material UI v9
 
 Each has its own package.json referencing `fjorm: "file:../.."`.
