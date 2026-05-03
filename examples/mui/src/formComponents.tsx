@@ -100,7 +100,7 @@ function MuiRadio({ settings, label, options }: FormComponentProps) {
 function MuiDate({ settings, label }: FormComponentProps) {
   return (
     <TextField label={label} name={settings.name} type="date" fullWidth
-      InputLabelProps={{ shrink: true }} required={settings.required} />
+      slotProps={{ inputLabel: { shrink: true } }} required={settings.required} />
   )
 }
 
