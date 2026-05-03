@@ -1,0 +1,2 @@
+import{a as e,r as t,t as n}from"./jsx-runtime-BFIdYadA.js";import{o as r,p as i,t as a}from"./dist-Dl2--F2N.js";var o=n(),s=e(t(),1);function c(){let e=new a;return e.addComponents(i),(0,o.jsx)(`div`,{className:`page-example`,style:{flex:1,display:`flex`,flexDirection:`column`,minHeight:0},children:(0,o.jsx)(`div`,{style:{flex:1,display:`flex`,minHeight:0},children:(0,o.jsx)(r,{ref:(0,s.useRef)(null),config:e,onSubmit:e=>{alert(`Form submitted:
+`+JSON.stringify(e,null,2))},onChange:e=>{console.log(`Form structure:`,e)}})})})}export{c as default};
