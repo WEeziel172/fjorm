@@ -3,6 +3,7 @@ name: Deploy Docs
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,8 +19,14 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             website/package-lock.json
             demo/package-lock.json
+
+      - name: Install and build root package
+        run: |
+          npm ci
+          npm run build
 
       - name: Install and build website
         run: |
