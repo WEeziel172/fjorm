@@ -14,8 +14,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src"],
+  "include": ["src", "src/env.d.ts"],
   "exclude": ["node_modules", "dist", "tests"]
 }

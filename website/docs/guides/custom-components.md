@@ -121,6 +121,6 @@ Ready-to-run examples in the repo:
 
 | Library | Directory |
 |---|---|
-| Ant Design v5 | `examples/antd/` |
-| Material UI v5 | `examples/mui/` |
-| Mantine v7 | `examples/mantine/` |
+| Ant Design v6 | `examples/antd/` |
+| Material UI v9 | `examples/mui/` |
+| Mantine v9 | `examples/mantine/` |

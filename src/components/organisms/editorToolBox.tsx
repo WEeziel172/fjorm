@@ -22,9 +22,11 @@ export function EditorToolBox({
             <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <div className="editor-panel-icon">
-          {Icon && <Icon />}
-        </div>
+        {Icon && (
+          <div className="editor-panel-icon">
+            <Icon />
+          </div>
+        )}
         <div className="editor-panel-title">
           <span className="editor-panel-label">Editing</span>
           <span className="editor-panel-name">{currentEditor.settings.label}</span>
