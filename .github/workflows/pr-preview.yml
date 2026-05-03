@@ -44,7 +44,7 @@ jobs:
           cd website
           yarn install --frozen-lockfile
           sed -i "s|baseUrl: '/fjorm/'|baseUrl: '/fjorm/pr-preview/${{ github.event.pull_request.number }}/docs/'|" docusaurus.config.ts
-          sed -i "s|https://weeziel172.github.io/fjorm/demo/|/fjorm/pr-preview/${{ github.event.pull_request.number }}/demo/|" docusaurus.config.ts
+          sed -i "s|https://weeziel172.github.io/fjorm/demo/|https://WEeziel172.github.io/fjorm/pr-preview/${{ github.event.pull_request.number }}/demo/|" docusaurus.config.ts
           yarn build
 
       - name: Deploy preview to GitHub Pages
