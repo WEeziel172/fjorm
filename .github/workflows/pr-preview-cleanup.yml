@@ -1,0 +1,35 @@
+name: PR Preview Cleanup
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+concurrency:
+  group: pr-preview-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Remove preview directory
+        run: |
+          rm -rf pr-preview/${{ github.event.pull_request.number }}
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          if git diff --quiet; then
+            echo "No changes to commit."
+          else
+            git add -A
+            git commit -m "cleanup: remove PR preview #${{ github.event.pull_request.number }}"
+            git push
+          fi

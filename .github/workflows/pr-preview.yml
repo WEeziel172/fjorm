@@ -1,0 +1,78 @@
+name: PR Preview
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: pr-preview-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - name: Install and build root package
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Install and build demo
+        run: |
+          cd demo
+          yarn install --frozen-lockfile
+          VITE_BASE="/fjorm/pr-preview/${{ github.event.pull_request.number }}/demo/" yarn build
+
+      - name: Deploy preview to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./demo/dist
+          destination_dir: pr-preview/${{ github.event.pull_request.number }}/demo
+          keep_files: true
+          commit_message: 'deploy: PR preview #${{ github.event.pull_request.number }}'
+
+      - name: Comment preview URL
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const url = `https://WEeziel172.github.io/fjorm/pr-preview/${prNumber}/demo/`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('PR preview deployed')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: `🔍 **PR preview deployed**\n\n${url}\n\n_(updated for latest commit)_`,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🔍 **PR preview deployed**\n\n${url}`,
+              });
+            }
