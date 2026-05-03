@@ -9,14 +9,10 @@ import {
 } from 'react-icons/fa'
 import {
   EditorInput, EditorOptions, FormComponentEditorContainer, useEditorChange,
-  type FormComponentRegistration, type FormComponentProps, type FormConfig, type EditorProps,
+  type FormComponentRegistration, type FormComponentProps, type FormConfig, type FormConfigProps, type EditorProps,
 } from 'fjorm'
 
-export function FormWrapper({ children, onSubmit, fjormValues, ...rest }: Record<string, unknown> & {
-  children?: React.ReactNode
-  onSubmit?: (data: Record<string, unknown>) => void
-  fjormValues?: Record<string, unknown>
-}) {
+export function FormWrapper({ children, onSubmit, fjormValues, ...rest }: FormConfigProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const formData = new FormData(e.target as HTMLFormElement)
@@ -204,7 +200,6 @@ function ListSwitcherEditor({ settings, options, onValueChange, onChangeOptions 
       <EditorInput settings={settings} name="name" label="Field name" handleOnChange={handleOnChange} />
       <EditorOptions
         options={options}
-        settings={settings}
         name="options"
         label="Items"
         handleOnChange={handleOnChange}

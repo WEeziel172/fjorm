@@ -4,12 +4,12 @@ import {
   FaHeading, FaParagraph, FaFont, FaList, FaCheckSquare,
   FaHashtag, FaCalendar, FaDotCircle, FaToggleOn, FaAlignLeft,
 } from 'react-icons/fa'
-import type { FormComponentRegistration, FormComponentProps, FormConfig } from 'fjorm'
+import type { FormComponentRegistration, FormComponentProps, FormConfig, FormConfigProps } from 'fjorm'
 
 const { Title, Paragraph: AntPTypography } = Typography
 const { TextArea } = Input
 
-export function FormWrapper({ children, onSubmit, ...rest }: Record<string, unknown> & { children?: React.ReactNode; onSubmit?: (data: Record<string, unknown>) => void }) {
+export function FormWrapper({ children, onSubmit, ...rest }: FormConfigProps) {
   const handleFinish = (values: Record<string, unknown>) => {
     onSubmit?.(values)
   }
