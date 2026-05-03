@@ -10,11 +10,11 @@ Ready-to-run example apps demonstrating Fjorm with three major React component l
 
 | Example | Live |
 |---|---|
-| Basic Demo | [fjorm playground](/fjorm/demo/) |
-| Ant Design v6 | [fjorm playground](/fjorm/demo/#/antd) |
-| Mantine v9 | [fjorm playground](/fjorm/demo/#/mantine) |
-| Material UI v9 | [fjorm playground](/fjorm/demo/#/mui) |
-| Custom Example | [fjorm playground](/fjorm/demo/#/custom) |
+| Basic Demo | [fjorm playground](https://weeziel172.github.io/fjorm/demo/) |
+| Ant Design v6 | [fjorm playground](https://weeziel172.github.io/fjorm/demo/#/antd) |
+| Mantine v9 | [fjorm playground](https://weeziel172.github.io/fjorm/demo/#/mantine) |
+| Material UI v9 | [fjorm playground](https://weeziel172.github.io/fjorm/demo/#/mui) |
+| Custom Example | [fjorm playground](https://weeziel172.github.io/fjorm/demo/#/custom) |
 
 ## Run Locally
 

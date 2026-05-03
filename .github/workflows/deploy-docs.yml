@@ -22,6 +22,7 @@ jobs:
           cache: yarn
           cache-dependency-path: |
             yarn.lock
+            demo/yarn.lock
             website/yarn.lock
 
       - name: Install and build root package
@@ -36,7 +37,9 @@ jobs:
           yarn build
 
       - name: Copy playground into website static
-        run: cp -r demo/dist/* website/static/demo/
+        run: |
+          mkdir -p website/static/demo
+          cp -r demo/dist/* website/static/demo/
 
       - name: Install and build website
         run: |
