@@ -103,7 +103,7 @@ function FormDisplayBody({
   return (
     <form id="form" onSubmit={handleSubmit} className="form-display-container">
       {formItems.length > 0 && formItems.map(renderComponent)}
-      <button type="submit">Save</button>
+      <button type="submit" className="form-display-submit">Save</button>
     </form>
   )
 }

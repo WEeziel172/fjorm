@@ -6,5 +6,5 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom'],
   },
-  base: '/fjorm/demo/',
+  base: process.env.VITE_BASE || '/fjorm/demo/',
 })
