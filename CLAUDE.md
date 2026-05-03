@@ -89,7 +89,8 @@ Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `uuid`.
 
 - **ci.yml:** typecheck → test → build → release (semantic-release on main, publishes to npm)
 - **deploy-docs.yml:** builds root package, website (Docusaurus), and demo (Vite), copies demo into website, deploys via `peaceiris/actions-gh-pages`
-- Semantic-release runs on every push to main. Commit messages follow conventional commits (`feat:`, `fix:`, `chore:`).
+- Semantic-release runs on every push to main. Commit messages follow conventional commits.
+- **Only `feat:` and `fix:` trigger npm releases.** Use `ci:` (workflows), `chore:` (repo config, deps), `docs:` (website, readme), or `test:` for changes that don't affect the published package. If the PR is purely repo-level changes, squash-merge it with a `ci:` or `chore:` commit message to avoid an unnecessary release.
 
 ## Website & Demo
 

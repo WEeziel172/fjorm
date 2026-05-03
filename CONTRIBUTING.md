@@ -27,16 +27,32 @@ git checkout -b fix/my-bugfix
 
 ## Commit conventions
 
-This project uses [semantic-release](https://github.com/semantic-release/semantic-release). All commits must follow [conventional commits](https://www.conventionalcommits.org/):
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release) with the default Angular preset. All commits must follow [conventional commits](https://www.conventionalcommits.org/).
 
-- `feat:` — new feature (triggers a minor release)
-- `fix:` — bug fix (triggers a patch release)
-- `chore:` — build, deps, CI, or tooling changes
-- `docs:` — documentation only
-- `refactor:` — code changes that neither fix a bug nor add a feature
-- `test:` — adding or updating tests
+### Types that trigger npm releases
+
+| Type | Version bump | When to use |
+|------|-------------|-------------|
+| `feat:` | Minor | New feature in the **library package** (new API, new component, new hook) |
+| `fix:` | Patch | Bug fix in the **library package** |
+| `perf:` | Patch | Performance improvement in the **library package** |
 
 Breaking changes: add `!` after the type (e.g. `feat!:`) or include `BREAKING CHANGE:` in the body.
+
+### Types that do NOT trigger releases
+
+Use these for changes that don't affect the npm package:
+
+| Type | When to use |
+|------|-------------|
+| `ci:` | CI/CD workflows, GitHub Actions, deployment scripts |
+| `chore:` | Build tooling, dependency updates, repo config |
+| `docs:` | Documentation, website, README, CLAUDE.md |
+| `style:` | Formatting, whitespace (no logic changes) |
+| `refactor:` | Code restructuring that doesn't change behavior or API |
+| `test:` | Adding or updating tests |
+
+**Key rule:** If your change doesn't affect the code someone installs from npm, it should NOT trigger a release. Use `ci:`, `chore:`, or `docs:` instead of `feat:` or `fix:`.
 
 ## Testing
 
