@@ -55,8 +55,8 @@ fjorm/
 │   ├── utils/            # Config class, hooks
 │   └── components/       # atoms, molecules, organisms
 ├── website/              # Docusaurus docs site
-├── demo/                 # Vite + React demo app
-├── examples/
+├── demo/                 # Playground SPA (demo + all examples)
+├── examples/             # Standalone reference projects
 │   ├── antd/             # Ant Design v6
 │   ├── mui/              # Material UI v9
 │   └── mantine/          # Mantine v9

@@ -23,50 +23,20 @@ jobs:
           cache-dependency-path: |
             yarn.lock
             website/yarn.lock
-            demo/yarn.lock
-            examples/antd/yarn.lock
-            examples/mantine/yarn.lock
-            examples/mui/yarn.lock
 
       - name: Install and build root package
         run: |
           yarn install --frozen-lockfile
           yarn build
 
-      - name: Install and build demo
+      - name: Install and build playground
         run: |
           cd demo
           yarn install --frozen-lockfile
           yarn build
 
-      - name: Install and build antd example
-        run: |
-          cd examples/antd
-          yarn install --frozen-lockfile
-          yarn build
-
-      - name: Install and build mantine example
-        run: |
-          cd examples/mantine
-          yarn install --frozen-lockfile
-          yarn build
-
-      - name: Install and build mui example
-        run: |
-          cd examples/mui
-          yarn install --frozen-lockfile
-          yarn build
-
-      - name: Copy demo and examples into website static
-        run: |
-          mkdir -p website/static/demo
-          mkdir -p website/static/examples/antd
-          mkdir -p website/static/examples/mantine
-          mkdir -p website/static/examples/mui
-          cp -r demo/dist/* website/static/demo/
-          cp -r examples/antd/dist/* website/static/examples/antd/
-          cp -r examples/mantine/dist/* website/static/examples/mantine/
-          cp -r examples/mui/dist/* website/static/examples/mui/
+      - name: Copy playground into website static
+        run: cp -r demo/dist/* website/static/demo/
 
       - name: Install and build website
         run: |

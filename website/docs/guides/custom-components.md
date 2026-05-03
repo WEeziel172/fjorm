@@ -117,10 +117,13 @@ The built-in `formComponents` already has `providesValue: false` on `Header` and
 
 ## Example Apps
 
-Ready-to-run examples in the repo:
+All examples are consolidated in the playground SPA (`demo/`). Each demonstrates a full integration with a major UI library, including a custom `FormWrapper`, multiple field types, and editor definitions.
 
-| Library | Directory |
-|---|---|
-| Ant Design v6 | `examples/antd/` |
-| Material UI v9 | `examples/mui/` |
-| Mantine v9 | `examples/mantine/` |
+| Library | Playground Route | Source |
+|---|---|---|
+| Ant Design v6 | `/#/antd` | `demo/src/examples/antd/` |
+| Material UI v9 | `/#/mui` | `demo/src/examples/mui/` |
+| Mantine v9 | `/#/mantine` | `demo/src/examples/mantine/` |
+| Custom Builder | `/#/custom` | `demo/src/custom/` |
+
+Run all examples from one dev server: `cd demo && yarn dev`
