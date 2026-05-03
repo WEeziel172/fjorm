@@ -11,7 +11,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
-    "@hello-pangea/dnd": "^16.6.0",
+    "@hello-pangea/dnd": "^18.0.0",
     "@mui/material": "^5.15.0",
     "fjorm": "file:../..",
     "react": "^19.0.0",

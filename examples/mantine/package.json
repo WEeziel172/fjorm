@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hello-pangea/dnd": "^16.6.0",
+    "@hello-pangea/dnd": "^18.0.0",
     "@mantine/core": "^7.6.0",
     "@mantine/hooks": "^7.6.0",
     "fjorm": "file:../..",
