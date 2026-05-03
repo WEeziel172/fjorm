@@ -1,31 +1,41 @@
-import { useRef } from 'react'
-import { Config, FormBuilder, formComponents } from 'fjorm'
-import type { FormBuilderHandle } from 'fjorm'
-import 'fjorm/dist/index.css'
+import { Outlet, NavLink } from 'react-router-dom'
+
+const navItems = [
+  { to: '/', label: 'Demo' },
+  { to: '/antd', label: 'Ant Design', color: '#1677ff' },
+  { to: '/mantine', label: 'Mantine', color: '#228be6' },
+  { to: '/mui', label: 'Material UI', color: '#1976d2' },
+  { to: '/custom', label: 'Custom', color: '#7c3aed' },
+]
 
 export default function App() {
-  const config = new Config()
-  config.addComponents(formComponents)
-  const builderRef = useRef<FormBuilderHandle>(null)
-
   return (
-    <div className="demo-wrapper">
-      <header className="demo-header">
+    <div className="app-wrapper">
+      <header className="app-header">
         <h1>fjorm</h1>
-        <span className="demo-badge">React Form Builder</span>
+        <nav className="app-nav">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              className={({ isActive }) =>
+                `nav-link${isActive ? ' active' : ''}`
+              }
+              style={({ isActive }) =>
+                isActive && item.color
+                  ? ({ '--accent': item.color } as React.CSSProperties)
+                  : undefined
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
       </header>
-      <div className="demo-builder">
-        <FormBuilder
-          ref={builderRef}
-          config={config}
-          onSubmit={(data) => {
-            alert('Form submitted:\n' + JSON.stringify(data, null, 2))
-          }}
-          onChange={(structure) => {
-            console.log('Form structure:', structure)
-          }}
-        />
-      </div>
+      <main className="app-main">
+        <Outlet />
+      </main>
     </div>
   )
 }

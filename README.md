@@ -116,15 +116,17 @@ The `editor` property on each registration tells Fjorm what sidebar editor field
 
 ### 📚 Example Apps
 
-Ready-to-run examples for three major component libraries. All examples are also available as live demos on the documentation site.
+All examples are accessible in a single playground app with client-side routing. Run them all from one dev server, or browse the live demos.
 
-| Library            | Directory           | Live Demo |
-| ------------------ | ------------------- | --------- |
-| **Ant Design v6**  | `examples/antd/`    | [Live](https://weeziel172.github.io/fjorm/examples/antd/) |
-| **Material UI v9** | `examples/mui/`     | [Live](https://weeziel172.github.io/fjorm/examples/mui/) |
-| **Mantine v9**     | `examples/mantine/` | [Live](https://weeziel172.github.io/fjorm/examples/mantine/) |
+| Example            | Route         | Live Demo |
+| ------------------ | ------------- | --------- |
+| **Basic Demo**     | `/`           | [Live](https://weeziel172.github.io/fjorm/demo/) |
+| **Ant Design v6**  | `/#/antd`     | [Live](https://weeziel172.github.io/fjorm/demo/#/antd) |
+| **Material UI v9** | `/#/mui`      | [Live](https://weeziel172.github.io/fjorm/demo/#/mui) |
+| **Mantine v9**     | `/#/mantine`  | [Live](https://weeziel172.github.io/fjorm/demo/#/mantine) |
+| **Custom Builder** | `/#/custom`   | [Live](https://weeziel172.github.io/fjorm/demo/#/custom) |
 
-Each example includes a `FormWrapper`, several field types, editor definitions, and a ready-to-run Vite setup. The basic demo app is also available [live](https://weeziel172.github.io/fjorm/demo/).
+Each example includes a `FormWrapper`, several field types, editor definitions, and a ready-to-run Vite setup. The **Custom Builder** example demonstrates composing a form builder and display from fjorm's primitives — `ToolBox`, `FormContainer`, `EditorToolBox`, and all public hooks.
 
 ---
 
@@ -355,13 +357,8 @@ yarn test
 # Run tests in watch mode
 yarn test:watch
 
-# Run the demo app
+# Run the playground (demo + all examples in one app)
 cd demo && yarn dev
-
-# Run an example app
-cd examples/antd && yarn dev
-cd examples/mui && yarn dev
-cd examples/mantine && yarn dev
 ```
 
 ### Releases
@@ -404,11 +401,11 @@ fjorm/
 ├── tests/
 │   ├── setup.ts
 │   └── unit/                 # 142 tests across 19 files
-├── demo/                     # Vite + React demo app
-├── examples/
+├── demo/                     # Playground SPA (demo + all examples)
+├── examples/                 # Standalone reference projects
 │   ├── antd/                 # Ant Design v6 integration
 │   ├── mui/                  # Material UI v9 integration
-│   └── mantine/             # Mantine v9 integration
+│   └── mantine/              # Mantine v9 integration
 ├── tsup.config.ts            # library build config
 ├── vitest.config.ts          # test config
 └── tsconfig.json
@@ -476,7 +473,7 @@ function ListSwitcher({ settings, options, value, onChangeValue }: FormComponent
 }
 ```
 
-The editor for this component uses `EditorOptions` to let users configure the selectable items — see `examples/mantine/src/formComponents.tsx` for the full working version.
+The editor for this component uses `EditorOptions` to let users configure the selectable items — see `demo/src/examples/mantine/formComponents.tsx` (or `examples/mantine/src/formComponents.tsx`) for the full working version.
 
 ### Building Custom Editors from Primitives
 

@@ -8,3 +8,7 @@ website/build/
 examples/*/dist/
 demo/dist/
 .claude/
+
+# Compiled JS artifacts from TS source (stale build output)
+demo/src/**/*.js
+examples/*/src/**/*.js
