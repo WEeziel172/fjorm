@@ -116,15 +116,15 @@ The `editor` property on each registration tells Fjorm what sidebar editor field
 
 ### 📚 Example Apps
 
-Ready-to-run examples for three major component libraries:
+Ready-to-run examples for three major component libraries. All examples are also available as live demos on the documentation site.
 
-| Library            | Directory           | Dev Command   |
-| ------------------ | ------------------- | ------------- |
-| **Ant Design v5**  | `examples/antd/`    | `npm run dev` |
-| **Material UI v5** | `examples/mui/`     | `npm run dev` |
-| **Mantine v7**     | `examples/mantine/` | `npm run dev` |
+| Library            | Directory           | Live Demo |
+| ------------------ | ------------------- | --------- |
+| **Ant Design v5**  | `examples/antd/`    | [Live](https://weeziel172.github.io/fjorm/examples/antd/) |
+| **Material UI v5** | `examples/mui/`     | [Live](https://weeziel172.github.io/fjorm/examples/mui/) |
+| **Mantine v7**     | `examples/mantine/` | [Live](https://weeziel172.github.io/fjorm/examples/mantine/) |
 
-Each example includes a `FormWrapper`, four field types (Header, Paragraph, TextInput, SelectInput), and a ready-to-run Vite setup.
+Each example includes a `FormWrapper`, several field types, editor definitions, and a ready-to-run Vite setup. The basic demo app is also available [live](https://weeziel172.github.io/fjorm/demo/).
 
 ---
 
@@ -156,6 +156,7 @@ interface FormComponentRegistration {
   component: ComponentType<FormComponentProps> // display component
   editor: ComponentType<EditorProps> | Record<string, string> // editor definition
   options?: FormComponentOption[] // default options (for selects)
+  providesValue?: boolean // set to false for display-only components (headers, paragraphs)
 }
 ```
 

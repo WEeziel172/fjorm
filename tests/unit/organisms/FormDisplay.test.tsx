@@ -177,6 +177,40 @@ describe('FormDisplay', () => {
     )
   })
 
+  it('excludes providesValue:false components from submitted data', () => {
+    const config = setupConfig()
+
+    const NonValueComponent = ({ settings }: FormComponentProps) => {
+      return <p>{settings.label}</p>
+    }
+
+    config.addComponents([{
+      key: 'DisplayOnly',
+      icon: () => null,
+      settings: { label: 'Display Only', name: 'info' },
+      component: NonValueComponent,
+      editor: () => null,
+      providesValue: false,
+    }])
+
+    const data = [
+      { id: '1', key: 'DisplayOnly', settings: { label: 'Info Block', name: 'info' } },
+      { id: '2', key: 'TextInput', settings: { label: 'Name', name: 'name' } },
+    ]
+
+    const onSubmit = vi.fn()
+    render(<FormDisplay data={data} config={config} onSubmit={onSubmit} />)
+
+    fireEvent.submit(screen.getByRole('button', { name: 'Save' }).closest('form')!)
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.not.objectContaining({ info: expect.anything() }),
+    )
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: '' }),
+    )
+  })
+
   it('pre-fills input from serialized value', () => {
     const config = setupConfig()
 

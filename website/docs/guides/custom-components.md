@@ -88,6 +88,33 @@ const formConfig: FormConfig = { component: FormWrapper }
 <FormBuilder config={config} form={formConfig} />
 ```
 
+## Display-Only Components
+
+Use `providesValue: false` for components that are purely decorative or structural — headers, paragraphs, dividers, images. These components are excluded from form submissions.
+
+```ts
+const myComponents: FormComponentRegistration[] = [
+  {
+    key: 'Header',
+    icon: FaHeading,
+    settings: { label: 'Header', name: 'Header' },
+    component: HeaderDisplay,
+    editor: HeaderEditor,
+    providesValue: false,  // excluded from submitted form data
+  },
+  {
+    key: 'TextInput',
+    icon: FaFont,
+    settings: { label: 'Text input', name: 'TextInput' },
+    component: TextInputDisplay,
+    editor: { label: 'EditorInput', name: 'EditorInput' },
+    // providesValue defaults to true — included in form submissions
+  },
+]
+```
+
+The built-in `formComponents` already has `providesValue: false` on `Header` and `Paragraph`.
+
 ## Example Apps
 
 Ready-to-run examples in the repo:

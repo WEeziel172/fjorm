@@ -63,6 +63,24 @@ interface EditorProps {
 }
 ```
 
+## `FormComponentRegistration`
+
+```ts
+interface FormComponentRegistration<
+  TSettings extends FormComponentSettings = FormComponentSettings,
+> {
+  key: string
+  settings: TSettings
+  icon: ComponentType
+  component: ComponentType<FormComponentProps>
+  editor: EditorDefinition
+  options?: FormComponentOption[]
+  providesValue?: boolean
+}
+```
+
+Set `providesValue: false` for display-only components (headers, paragraphs, dividers) to exclude them from form submissions. Defaults to `true` when omitted.
+
 ## `SerializedFormItem`
 
 Portable JSON format for persistence.

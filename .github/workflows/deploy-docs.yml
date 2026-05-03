@@ -22,6 +22,9 @@ jobs:
             package-lock.json
             website/package-lock.json
             demo/package-lock.json
+            examples/antd/package-lock.json
+            examples/mantine/package-lock.json
+            examples/mui/package-lock.json
 
       - name: Install and build root package
         run: |
@@ -42,6 +45,31 @@ jobs:
 
       - name: Copy demo into website build output
         run: cp -r demo/dist website/build/demo
+
+      - name: Install and build antd example
+        run: |
+          cd examples/antd
+          npm ci
+          npm run build
+
+      - name: Install and build mantine example
+        run: |
+          cd examples/mantine
+          npm ci
+          npm run build
+
+      - name: Install and build mui example
+        run: |
+          cd examples/mui
+          npm ci
+          npm run build
+
+      - name: Copy examples into website build output
+        run: |
+          mkdir -p website/build/examples
+          cp -r examples/antd/dist website/build/examples/antd
+          cp -r examples/mantine/dist website/build/examples/mantine
+          cp -r examples/mui/dist website/build/examples/mui
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
