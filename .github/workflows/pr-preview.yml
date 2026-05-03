@@ -82,13 +82,13 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: `🔍 **PR preview deployed**\n\n${url}\n\n_(updated for latest commit)_`,
+                body: `[PR #${prNumber} preview](${url})\n\n_(updated for latest commit)_`,
               });
             } else {
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: prNumber,
-                body: `🔍 **PR preview deployed**\n\n${url}`,
+                body: `[PR #${prNumber} preview](${url})`,
               });
             }
