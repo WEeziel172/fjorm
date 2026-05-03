@@ -215,12 +215,14 @@ export const formComponents: FormComponentRegistration[] = [
     settings: { label: 'Header', name: 'Header' },
     component: MantineHeader,
     editor: { label: 'EditorInput' },
+    providesValue: false,
   },
   {
     key: 'Paragraph', icon: FaParagraph,
     settings: { label: 'Paragraph', content: 'Example text', name: 'Paragraph' },
     component: MantineParagraph,
     editor: { content: 'EditorTextArea' },
+    providesValue: false,
   },
   {
     key: 'TextInput', icon: FaFont,
@@ -286,6 +288,3 @@ export const formComponents: FormComponentRegistration[] = [
   },
 ]
 
-export const formWrapper: FormConfig = {
-  component: FormWrapper,
-}

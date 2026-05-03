@@ -127,6 +127,7 @@ export const formComponents: FormComponentRegistration[] = [
     icon: FaHeading,
     component: AntHeader,
     editor: { label: 'EditorInput' },
+    providesValue: false,
   },
   {
     key: 'Paragraph',
@@ -134,6 +135,7 @@ export const formComponents: FormComponentRegistration[] = [
     icon: FaParagraph,
     component: AntParagraph,
     editor: { content: 'EditorTextArea' },
+    providesValue: false,
   },
   {
     key: 'TextInput',
@@ -231,6 +233,3 @@ export const formComponents: FormComponentRegistration[] = [
   },
 ]
 
-export const formWrapper: FormConfig = {
-  component: FormWrapper,
-}

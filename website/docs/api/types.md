@@ -109,8 +109,20 @@ interface FormComponentOption {
 
 ```ts
 interface FormConfig {
-  component: ComponentType<Record<string, unknown>>
+  component: ComponentType<FormConfigProps>
   actions?: ReactNode
+}
+```
+
+## `FormConfigProps`
+
+Props received by the custom form wrapper component.
+
+```ts
+interface FormConfigProps {
+  children?: ReactNode
+  onSubmit?: (data: Record<string, unknown>) => void
+  fjormValues: Record<string, unknown>
 }
 ```
 
@@ -123,6 +135,24 @@ interface FormItem extends FormComponentRegistration {
   id: string
   value?: unknown
 }
+```
+
+## `EditorFieldMap`
+
+Declarative editor definition mapping setting keys to editor primitives.
+
+```ts
+type EditorFieldMap = Record<string, string>
+```
+
+Example: `{ label: 'EditorInput', required: 'EditorCheckbox', content: 'EditorTextArea' }`
+
+## `EditorDefinition`
+
+```ts
+type EditorDefinition =
+  | ComponentType<EditorProps>
+  | EditorFieldMap
 ```
 
 ## `EditorChangePayload`

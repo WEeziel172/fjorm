@@ -43,15 +43,20 @@ Renders: a `<label>` with required badge, and a `<select>` with `<option>` eleme
 
 ## `FormComponentHeader`
 
-Renders a heading element.
+Renders a heading element. Accepts an optional `headingLevel` prop to control the HTML heading tag.
 
 ```tsx
 <FormComponentHeader
   id="3"
   label="Section Title"
   settings={{ label: 'Section Title', name: 'header' }}
+  headingLevel="h2"
 />
 ```
+
+| Prop | Type | Description |
+|---|---|---|
+| `headingLevel` | `'h1' \| 'h2' \| 'h3' \| 'h4' \| 'h5' \| 'h6'` | Heading tag to render (optional, defaults to `'h3'`) |
 
 Renders: a styled heading.
 

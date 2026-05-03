@@ -11,13 +11,13 @@ This guide walks through building a three-column builder — toolbox on the left
 ## Full example
 
 ```tsx
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { DragDropContext } from '@hello-pangea/dnd'
 import {
   Config,
   useFormItems,
   useDragDrop,
-  handleDragEnd,
+  applyDragEnd,
   FormContainer,
   ToolBox,
   EditorToolBox,
@@ -42,6 +42,7 @@ export function ThreeColumnBuilder({
   // --- State ---
   const [currentEditor, setCurrentEditor] = useState<FormItem | null>(null)
   const [previewForm, setPreviewForm] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // --- Form items CRUD ---
   const {
@@ -55,11 +56,11 @@ export function ThreeColumnBuilder({
   } = useFormItems(config, initialData, onChange)
 
   // --- Drag & drop ---
-  const { placeholderProps, onDragUpdate } = useDragDrop()
+  const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
 
   // --- Drag handler ---
   const onDragEnd = useCallback(
-    (d: DragResult) => { handleDragEnd(d, addItem, reorderItems) },
+    (d: DragResult) => { applyDragEnd(d, addItem, reorderItems) },
     [addItem, reorderItems],
   )
 
@@ -97,7 +98,7 @@ export function ThreeColumnBuilder({
         </div>
 
         {/* Center: Canvas / Preview */}
-        <div style={{ flex: 1 }}>
+        <div ref={containerRef} style={{ flex: 1 }}>
           {previewForm ? (
             <FormDisplay
               form={form}
@@ -153,7 +154,7 @@ const {
   reorderItems,
 } = useFormItems(config, initialData, onChange)
 
-const { placeholderProps, onDragUpdate } = useDragDrop()
+const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
 
 // Render formItems with your own UI library
 // Wire addItem to a custom palette

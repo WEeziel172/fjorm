@@ -9,7 +9,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178c6.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
 
-Fjorm lets you build visual, drag-and-drop form editors in React. Drag components from a toolbox onto a canvas, configure each field's properties in a sidebar editor, preview the live form, and serialize the result as JSON. The rendering layer is completely pluggable — use raw HTML inputs, Ant Design, MUI, Mantine, or your own design system.
+**Fjorm** is a visual, drag-and-drop form builder and form designer for React 19+. Drag components from a toolbox onto a canvas, configure each field's properties in a sidebar editor, preview the live form, and serialize the result as JSON. The rendering layer is completely pluggable — use raw HTML inputs, Ant Design, MUI, Mantine, or your own design system. Perfect for building form editors, survey creators, page builders, and any tool that needs a visual form constructor.
 
 📖 **Full documentation:** [weeziel172.github.io/fjorm](https://weeziel172.github.io/fjorm/)
 
@@ -29,7 +29,7 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 - **UI-framework agnostic** — register your own display components per field type
 - **JSON serialization** — export/import form structure as portable JSON
 - **TypeScript-first** — full type definitions for the component registry and all APIs
-- **Lightweight** — peer-deps only: React and `@hello-pangea/dnd`
+- **Lightweight** — peer deps: React 19+, react-dom 19+; runtime deps: `@hello-pangea/dnd`, `react-icons`, `uuid`
 
 ---
 
@@ -39,7 +39,7 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 npm install fjorm
 ```
 
-Fjorm requires React 19+ and `@hello-pangea/dnd` (installed automatically as a dependency):
+Fjorm requires React 19+ and react-dom 19+ as peer dependencies. Runtime dependencies (`@hello-pangea/dnd`, `react-icons`, `uuid`) are installed automatically:
 
 ```bash
 npm install fjorm react react-dom
@@ -213,18 +213,106 @@ const json: SerializedFormItem[] = serializeFormItems(formItems)
 const formItems: FormItem[] = deserializeFormItems(json, config)
 ```
 
-### Exports
+### `FormComponentProps`
 
-The public API is intentionally small. Build your own display components (see Adapter Pattern above) — the library provides the framework, not the fields.
+The props interface every display component receives. Your adapter components (Ant Design, MUI, Mantine wrappers) are built against this shape:
 
-| Export                 | Kind      | Description                                                               |
-| ---------------------- | --------- | ------------------------------------------------------------------------- |
-| `Config`               | Class     | Component registry                                                        |
-| `FormBuilder`          | Component | Main builder UI (named export)                                            |
-| `FormDisplay`          | Component | Standalone read-only form renderer                                        |
-| `formComponents`       | Value     | Default component definitions (Header, Paragraph, TextInput, SelectInput) |
-| `serializeFormItems`   | Function  | Convert form items to portable JSON                                       |
-| `deserializeFormItems` | Function  | Rehydrate JSON back to form items                                         |
+```ts
+interface FormComponentProps {
+  id: string                    // Unique item ID
+  label: string                 // Display label from settings
+  style?: CSSProperties         // Optional style overrides
+  settings: FormComponentSettings // All settings for this field
+  options?: FormComponentOption[] // Options (for selects, checkboxes, etc.)
+  children?: ReactNode          // Optional children
+  editMode?: boolean            // True when rendered in builder canvas
+  value?: unknown               // Pre-filled value from serialized data
+  onChangeValue?: (value: unknown) => void // Push value for complex components
+  onChangeFormItemSettings?: (payload) => void // Notify setting changes
+  onClick?: (payload) => void   // Click handler (builder mode)
+  editor?: EditorDefinition     // Editor definition for the field
+}
+```
+
+### `FormConfig` & `FormConfigProps`
+
+Custom form wrapper configuration passed to `<FormBuilder form={...}>`:
+
+```ts
+interface FormConfig {
+  component: ComponentType<FormConfigProps>  // custom form wrapper component
+  actions?: ReactNode                        // optional actions (buttons, etc.)
+}
+
+interface FormConfigProps {
+  children?: ReactNode
+  onSubmit?: (data: Record<string, unknown>) => void
+  fjormValues: Record<string, unknown>  // all onChangeValue-tracked values
+}
+```
+
+### `EditorProps`
+
+Props received by editor components:
+
+```ts
+interface EditorProps {
+  settings: FormComponentSettings
+  options?: FormComponentOption[]
+  formItemId: string
+  onValueChange: (payload: { name: string; value: unknown }) => void
+  onChangeOptions?: (payload: { name: string; options: FormComponentOption[] }) => void
+}
+```
+
+### All Exports
+
+Build your own display components (see Adapter Pattern above) — the library provides the framework, not the fields.
+
+**Components:**
+
+| Export | Kind | Description |
+|---|---|---|
+| `Config` | Class | Component registry |
+| `FormBuilder` | Component | Main builder UI (named export) |
+| `FormDisplay` | Component | Standalone read-only form renderer |
+| `FormContainer` | Component | Drag-and-drop canvas |
+| `ToolBox` | Component | Component palette |
+| `EditorToolBox` | Component | Editor sidebar panel |
+| `EditorContainer` | Component | Renders editor fields for a form item |
+| `FormComponentWrapper` | Component | Wraps form item with edit/delete actions |
+| `EditorInput` | Component | Text editor field |
+| `EditorCheckbox` | Component | Boolean toggle editor field |
+| `EditorTextArea` | Component | Multi-line text editor field |
+| `EditorOptions` | Component | Options list editor (add/remove/edit rows) |
+| `EditorCompiler` | Component | Converts `EditorFieldMap` to rendered editor components |
+| `FormComponentInput` | Component | Default text input display |
+| `FormComponentSelect` | Component | Default select dropdown display |
+| `FormComponentHeader` | Component | Default heading display |
+| `FormComponentParagraph` | Component | Default paragraph display |
+| `ErrorBoundary` | Component | Error boundary wrapper |
+| `FormComponentEditorContainer` | Component | Editor layout wrapper |
+| `FormItemLabel` | Component | Form field label with required badge |
+| `FormItemDisplay` | Component | Label + control layout wrapper |
+| `ComponentEditActions` | Component | Edit/delete action buttons |
+| `Tag` | Component | Small pill badge |
+| `Option` | Component | Single option row (value + title) |
+| `ToolboxItem` | Component | Toolbox palette card |
+
+**Hooks & Utilities:**
+
+| Export | Kind | Description |
+|---|---|---|
+| `formComponents` | Value | Default component definitions (Header, Paragraph, TextInput, SelectInput) |
+| `serializeFormItems` | Function | Convert form items to portable JSON |
+| `deserializeFormItems` | Function | Rehydrate JSON back to form items |
+| `applyDragEnd` | Function | Process drag-and-drop result |
+| `getSetting` | Function | Type-safe settings access helper |
+| `useFormItems` | Hook | Form items state management |
+| `useDragDrop` | Hook | Drag placeholder positioning |
+| `useEditorChange` | Hook | Editor change handler |
+| `useEditorState` | Hook | Local editor state |
+| `useOptionsManager` | Hook | Options list CRUD |
 
 **Types:**
 
@@ -234,12 +322,15 @@ import type {
   FormComponentOption,
   EditorProps,
   FormComponentProps,
+  EditorDefinition,
+  EditorFieldMap,
   FormComponentRegistration,
   FormItem,
   SerializedFormItem,
   FormConfig,
-  EditorDefinition,
+  FormConfigProps,
   EditorChangePayload,
+  DragResult,
   FormBuilderHandle,
 } from 'fjorm'
 ```
@@ -298,16 +389,21 @@ fjorm/
 │   ├── styles.css            # builder UI styles
 │   ├── utils/
 │   │   ├── config.ts         # Config class
-│   │   └── useEditorChange.ts  # shared editor change handler
+│   │   ├── getSetting.ts     # type-safe settings access
+│   │   ├── useDragDrop.ts    # useDragDrop hook + applyDragEnd
+│   │   ├── useEditorChange.ts # editor change handler
+│   │   ├── useEditorState.ts # local editor state hook
+│   │   ├── useFormItems.ts   # useFormItems + serialization
+│   │   └── useOptionsManager.ts # option CRUD hook
 │   └── components/
-│       ├── atoms/            # 9 primitive components
-│       ├── molecules/        # 13 composite components
+│       ├── atoms/            # 8 primitive components
+│       ├── molecules/        # 9 composite components
 │       ├── organisms/        # 9 business-logic components
 │       ├── componentUtils/   # dynamic editor compiler
 │       └── builderComponents.ts  # default component definitions
 ├── tests/
 │   ├── setup.ts
-│   └── unit/                 # 33 tests across 6 files
+│   └── unit/                 # 142 tests across 19 files
 ├── demo/                     # Vite + React demo app
 ├── examples/
 │   ├── antd/                 # Ant Design v5 integration

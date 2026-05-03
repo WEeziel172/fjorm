@@ -16,7 +16,7 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 - **UI-framework agnostic** — register your own display components per field type
 - **JSON serialization** — export/import form structure as portable JSON
 - **TypeScript-first** — full type definitions for all APIs
-- **Lightweight** — peer-deps only: React 18+ and `@hello-pangea/dnd`
+- **Lightweight** — peer-deps only: React 19+ and react-dom 19+; runtime deps: `@hello-pangea/dnd`, `react-icons`, `uuid`
 
 ## Install
 

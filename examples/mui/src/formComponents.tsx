@@ -121,12 +121,14 @@ export const formComponents: FormComponentRegistration[] = [
     settings: { label: 'Header', name: 'Header' },
     component: MuiHeader,
     editor: { label: 'EditorInput' },
+    providesValue: false,
   },
   {
     key: 'Paragraph', icon: FaParagraph,
     settings: { label: 'Paragraph', content: 'Example text', name: 'Paragraph' },
     component: MuiParagraph,
     editor: { content: 'EditorTextArea' },
+    providesValue: false,
   },
   {
     key: 'TextInput', icon: FaFont,
@@ -180,6 +182,3 @@ export const formComponents: FormComponentRegistration[] = [
   },
 ]
 
-export const formWrapper: FormConfig = {
-  component: FormWrapper,
-}

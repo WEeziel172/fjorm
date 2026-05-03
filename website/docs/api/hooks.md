@@ -18,9 +18,6 @@ function useFormItems(
 ): {
   formItems: FormItem[]
   setFormItems: Dispatch<SetStateAction<FormItem[]>>
-  formItemIdMappings: Record<string, number>
-  formItemsRef: MutableRefObject<FormItem[]>
-  mappingsRef: MutableRefObject<Record<string, number>>
   deleteItem: (id: string) => string
   findItem: (id: string) => FormItem | undefined
   changeSettings: (id: string, settings: FormComponentSettings) => void
@@ -51,10 +48,12 @@ deleteItem('item-1')
 
 ## `useDragDrop`
 
-Manages drag-and-drop placeholder positioning on the canvas.
+Manages drag-and-drop placeholder positioning on the canvas. Requires a ref to the canvas container element for calculating placeholder dimensions.
 
 ```ts
-function useDragDrop(): {
+function useDragDrop(
+  containerRef: RefObject<HTMLElement | null>,
+): {
   placeholderProps: PlaceholderProps | null
   onDragUpdate: (update: DragUpdate) => void
 }
@@ -63,30 +62,36 @@ function useDragDrop(): {
 **Example:**
 
 ```tsx
-const { placeholderProps, onDragUpdate } = useDragDrop()
+import { useRef } from 'react'
+
+const containerRef = useRef<HTMLDivElement>(null)
+const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
 
 <DragDropContext onDragUpdate={onDragUpdate} onDragEnd={...}>
   <FormContainer placeholderProps={placeholderProps} ... />
 </DragDropContext>
 ```
 
-## `handleDragEnd`
+## `applyDragEnd`
 
 Pure function — processes a drag result and calls the appropriate mutation handler. Does not depend on React state.
 
 ```ts
-function handleDragEnd(
+function applyDragEnd(
   d: DragResult,
   addItem: (key: string, index: number) => void,
   reorderItems: (from: number, to: number) => void,
+  config?: HandleDragEndConfig,
 ): boolean
 ```
+
+The optional `config` parameter accepts `{ sourceDroppableId: string }` to customize which droppable is considered the toolbox source.
 
 **Example:**
 
 ```tsx
 const onDragEnd = useCallback(
-  (d: DragResult) => { handleDragEnd(d, addItem, reorderItems) },
+  (d: DragResult) => { applyDragEnd(d, addItem, reorderItems) },
   [addItem, reorderItems],
 )
 ```

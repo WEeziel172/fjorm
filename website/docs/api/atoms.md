@@ -93,10 +93,11 @@ A single card in the toolbox palette. Shows an icon and label.
 Edit and delete action buttons that appear on hover over a form item on the canvas.
 
 ```tsx
-<ComponentEditActions onEdit={handleEdit} onDelete={handleDelete} />
+<ComponentEditActions id={item.id} onEdit={handleEdit} onDelete={handleDelete} />
 ```
 
 | Prop | Type | Description |
 |---|---|---|
+| `id` | `string` | Form item ID (required, used for callbacks) |
 | `onEdit` | `(payload: { id: string }) => void` | Edit callback |
 | `onDelete` | `(payload: { id: string }) => void` | Delete callback |

@@ -52,6 +52,7 @@
 .fjorm,
 .form-builder-container {
   display: flex;
+  width: 100%;
   height: 100%;
   min-height: 400px;
   font-family: var(--fj-font);
@@ -485,26 +486,40 @@
 }
 
 /* Options editor: "Add" button */
-.toolbox-container .form-item span {
-  color: var(--fj-sidebar-accent);
+.toolbox-container .options-header {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbox-container .options-header label {
+  margin-bottom: 0;
+}
+
+.add-option-btn {
+  padding: 0.25rem 0.5rem;
   font-size: 0.78rem;
   font-weight: 600;
+  font-family: var(--fj-font);
+  color: var(--fj-sidebar-accent);
+  background: none;
+  border: none;
   cursor: pointer;
   transition: color var(--fj-transition);
 }
 
-.toolbox-container .form-item span:hover {
+.add-option-btn:hover {
   color: var(--fj-sidebar-accent-hover);
 }
 
-.toolbox-container .form-item span:focus-visible {
+.add-option-btn:focus-visible {
   outline: 2px solid var(--fj-sidebar-accent);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* Option sub-rows (value/title/delete) — horizontal layout */
-.toolbox-container .form-item .form-item {
+/* Option rows (value/title/delete) — horizontal layout */
+.toolbox-container .form-item.option-row {
   flex-direction: row;
   align-items: center;
   gap: 0.4rem;
@@ -514,7 +529,7 @@
   border-color: var(--fj-sidebar-input-border);
 }
 
-.toolbox-container .form-item .form-item input {
+.toolbox-container .form-item.option-row input {
   flex: 1;
   min-width: 0;
   width: auto;
@@ -522,7 +537,7 @@
   font-size: 0.8rem;
 }
 
-.toolbox-container .form-item .form-item button {
+.toolbox-container .form-item.option-row button {
   flex-shrink: 0;
   width: 1.5rem;
   height: 1.5rem;
@@ -535,12 +550,12 @@
   transition: background var(--fj-transition), color var(--fj-transition);
 }
 
-.toolbox-container .form-item .form-item button:hover {
+.toolbox-container .form-item.option-row button:hover {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
 
-.toolbox-container .form-item .form-item button:focus-visible {
+.toolbox-container .form-item.option-row button:focus-visible {
   outline: 2px solid var(--fj-sidebar-accent);
   outline-offset: 2px;
   border-radius: 2px;

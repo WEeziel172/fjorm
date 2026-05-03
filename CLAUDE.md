@@ -101,7 +101,7 @@ Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `react-icons`, `uuid`.
 ## Example Apps
 
 Three UI library integrations in `examples/`:
-- `antd/` — Ant Design v5 (React 18)
+- `antd/` — Ant Design v5 (React 19)
 - `mantine/` — Mantine v7 (10+ field types)
 - `mui/` — Material UI v5
 

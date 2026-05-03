@@ -18,7 +18,7 @@ export function Option({
   onDelete: (payload: { id: string }) => void
 }) {
   return (
-    <div className="form-item">
+    <div className="form-item option-row">
       <input
         aria-label="Option value"
         style={{ width: '40%' }}

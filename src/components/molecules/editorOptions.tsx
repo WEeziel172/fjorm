@@ -22,7 +22,7 @@ export function EditorOptions({
 
   return (
     <>
-      <div className="form-item">
+      <div className="form-item options-header">
         <label>{label}</label>
         <button type="button" className="add-option-btn" onClick={addOption}>
           Add
