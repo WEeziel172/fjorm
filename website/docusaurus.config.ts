@@ -2,13 +2,15 @@ import { themes as prismThemes } from 'prism-react-renderer'
 import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
 
+const baseUrl = '/fjorm/'
+
 const config: Config = {
   title: 'Fjorm',
   tagline: 'Modular drag-and-drop form builder for React',
   favicon: 'img/favicon.ico',
 
   url: 'https://WEeziel172.github.io',
-  baseUrl: '/fjorm/',
+  baseUrl,
 
   organizationName: 'WEeziel172',
   projectName: 'fjorm',
@@ -53,6 +55,11 @@ const config: Config = {
           sidebarId: 'docs',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          href: `${baseUrl}demo/`,
+          label: 'Demo',
+          position: 'left',
         },
         {
           href: 'https://github.com/WEeziel172/fjorm',
