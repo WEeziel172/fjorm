@@ -804,6 +804,44 @@
   margin: 0 auto;
 }
 
+.form-display-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+  padding: 0.7rem 1.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--fj-font);
+  color: var(--fj-color-white);
+  background: linear-gradient(135deg, var(--fj-color-primary) 0%, var(--fj-color-primary-hover) 100%);
+  border: none;
+  border-radius: var(--fj-radius-md);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(91, 110, 255, 0.25);
+  transition:
+    transform var(--fj-transition),
+    box-shadow var(--fj-transition),
+    opacity var(--fj-transition);
+}
+
+.form-display-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(91, 110, 255, 0.35);
+}
+
+.form-display-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(91, 110, 255, 0.2);
+}
+
+.form-display-submit:focus-visible {
+  outline: 2px solid var(--fj-color-primary);
+  outline-offset: 2px;
+}
+
 /* === Drag-and-Drop States === */
 /* The doubled class selectors (e.g., .form-container.form-container) increase
    specificity to override inline styles injected by the third-party DnD library
