@@ -28,9 +28,15 @@ function FormDisplayBody({
   }, [data, config])
 
   // Pre-compute stable onChange callbacks per field name
+  const nonValueNames = useMemo(
+    () => new Set(formItems.filter(item => item.providesValue === false).map(item => item.settings.name)),
+    [formItems],
+  )
+
   const onChangeCallbacks = useMemo(() => {
     const callbacks: Record<string, (value: unknown) => void> = {}
     for (const item of formItems) {
+      if (item.providesValue === false) continue
       const name = item.settings.name
       if (!callbacks[name]) {
         callbacks[name] = (value: unknown) => {
@@ -57,6 +63,7 @@ function FormDisplayBody({
 
     for (const item of data) {
       const name = item.settings.name
+      if (nonValueNames.has(name)) continue
       const tracked = valuesRef.current[name]
       dataObj[name] = (name in valuesRef.current && tracked !== null)
         ? tracked

@@ -53,6 +53,7 @@ export interface FormComponentRegistration<
   component: ComponentType<FormComponentProps>
   editor: EditorDefinition
   options?: FormComponentOption[]
+  providesValue?: boolean
 }
 
 export interface FormItem extends FormComponentRegistration {

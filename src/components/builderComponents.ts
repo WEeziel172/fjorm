@@ -15,6 +15,7 @@ export const formComponents: FormComponentRegistration[] = [
     icon: FaHeading,
     component: FormComponentHeader,
     editor: FormComponentHeaderEditor,
+    providesValue: false,
   },
   {
     key: 'Paragraph',
@@ -22,6 +23,7 @@ export const formComponents: FormComponentRegistration[] = [
     icon: FaParagraph,
     component: FormComponentParagraph,
     editor: FormComponentParagraphEditor,
+    providesValue: false,
   },
   {
     key: 'TextInput',
