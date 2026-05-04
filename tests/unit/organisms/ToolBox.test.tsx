@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { DragDropContext } from '@hello-pangea/dnd'
+import { DndContext } from '@dnd-kit/core'
 import { ToolBox } from '../../../src/components/organisms/ToolBox'
 
 function renderToolBox(previewForm = false, setPreviewForm = vi.fn()) {
@@ -11,14 +11,14 @@ function renderToolBox(previewForm = false, setPreviewForm = vi.fn()) {
   ]
 
   return render(
-    <DragDropContext onDragEnd={vi.fn()}>
+    <DndContext onDragEnd={vi.fn()}>
       <ToolBox
         formComponents={formComponents}
         setPreviewForm={setPreviewForm}
         previewForm={previewForm}
-        droppableId="toolbox"
+        activeDragKey={null}
       />
-    </DragDropContext>,
+    </DndContext>,
   )
 }
 

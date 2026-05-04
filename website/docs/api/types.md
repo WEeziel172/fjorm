@@ -166,15 +166,37 @@ interface EditorChangePayload {
 }
 ```
 
-## `DragResult`
+## `DndItemData`
 
-The result object from `@hello-pangea/dnd`'s `onDragEnd` callback.
+Data attached to draggable/droppable elements via @dnd-kit's `data` prop.
 
 ```ts
-interface DragResult {
-  draggableId: string
-  source: { droppableId: string; index: number }
-  destination?: { droppableId: string; index: number } | null
+interface DndItemData {
+  kind: 'toolbox-item' | 'canvas-item' | 'container-dropzone' | 'canvas-root'
+  componentKey?: string
+  containerId?: string
+}
+```
+
+## `DragEndPayload`
+
+Shape passed to `useFormBuilderDragDrop`'s `onDragEnd` handler after extracting from @dnd-kit's event.
+
+```ts
+interface DragEndPayload {
+  active: DndActive
+  over: DndOver
+}
+```
+
+## `EditorFieldDescriptor`
+
+Object form for editor fields that need options (e.g., `EditorSelect`).
+
+```ts
+interface EditorFieldDescriptor {
+  type: string
+  options?: { value: string; label: string }[]
 }
 ```
 

@@ -76,7 +76,7 @@ describe('FormBuilder', () => {
     expect(screen.getByText('Preloaded')).toBeInTheDocument()
   })
 
-  it('renders FormContainer items inside DragDropContext', () => {
+  it('renders FormContainer items inside DndContext', () => {
     const { config } = setup()
     const initialData = [
       { id: 'item-1', key: 'Header', settings: { label: 'Draggable Header', name: 'h' } },

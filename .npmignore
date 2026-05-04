@@ -2,6 +2,7 @@ dist/*.map
 src/
 tests/
 demo/
+development/
 website/
 examples/
 .claude/

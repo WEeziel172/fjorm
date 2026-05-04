@@ -46,57 +46,45 @@ deleteItem('item-1')
 
 ---
 
-## `useDragDrop`
+## `useFormBuilderDragDrop`
 
-Manages drag-and-drop placeholder positioning on the canvas. Requires a ref to the canvas container element for calculating placeholder dimensions.
+Hook for @dnd-kit event handling. Returns callbacks for `DndContext` and tracks the active drag ID. Handles all drag operations: toolbox→canvas, canvas reorder, container in/out moves.
 
 ```ts
-function useDragDrop(
-  containerRef: RefObject<HTMLElement | null>,
+function useFormBuilderDragDrop(
+  addItem: (key: string, index: number, parentId?: string) => void,
+  reorderItems: (from: number, to: number, parentId?: string) => void,
+  moveItem: (id: string, toParentId: string | undefined, toIndex: number) => void,
+  getItemIndex: (id: string, parentId?: string) => number,
+  getParentId: (id: string) => string | undefined,
+  getRootItemCount: () => number,
 ): {
-  placeholderProps: PlaceholderProps | null
-  onDragUpdate: (update: DragUpdate) => void
+  activeId: string | null
+  onDragStart: (event: DragStartEvent) => void
+  onDragEnd: (event: DragEndEvent) => void
 }
 ```
 
 **Example:**
 
 ```tsx
-import { useRef } from 'react'
+import { DndContext, DragOverlay } from '@dnd-kit/core'
+import { useFormBuilderDragDrop } from 'fjorm'
 
-const containerRef = useRef<HTMLDivElement>(null)
-const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
-
-<DragDropContext onDragUpdate={onDragUpdate} onDragEnd={...}>
-  <FormContainer placeholderProps={placeholderProps} ... />
-</DragDropContext>
-```
-
-## `applyDragEnd`
-
-Pure function — processes a drag result and calls the appropriate mutation handler. Does not depend on React state.
-
-```ts
-function applyDragEnd(
-  d: DragResult,
-  addItem: (key: string, index: number) => void,
-  reorderItems: (from: number, to: number) => void,
-  config?: HandleDragEndConfig,
-): boolean
-```
-
-The optional `config` parameter accepts `{ sourceDroppableId: string }` to customize which droppable is considered the toolbox source.
-
-**Example:**
-
-```tsx
-const onDragEnd = useCallback(
-  (d: DragResult) => { applyDragEnd(d, addItem, reorderItems) },
-  [addItem, reorderItems],
+const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+  addItem, reorderItems, moveItem, getItemIndex, getParentId, getRootItemCount,
 )
+
+<DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+  <FormContainer ... />
+  <ToolBox ... />
+  <DragOverlay>
+    {activeId && <ItemPreview id={activeId} />}
+  </DragOverlay>
+</DndContext>
 ```
 
-Returns `true` if the drag changed state, `false` if it was a no-op.
+Uses `data.current.kind` on draggable/droppable elements to identify whether the source/target is a toolbox item, canvas item, container dropzone, or canvas root.
 
 ---
 

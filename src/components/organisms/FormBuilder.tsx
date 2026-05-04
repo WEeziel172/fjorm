@@ -1,13 +1,44 @@
-import { useState, useImperativeHandle, useCallback, useRef, useEffect, forwardRef, useId } from 'react'
-import { DragDropContext } from '@hello-pangea/dnd'
+import { useState, useImperativeHandle, useCallback, useRef, useEffect, forwardRef, useMemo } from 'react'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  closestCorners,
+  pointerWithin,
+  type CollisionDetection,
+} from '@dnd-kit/core'
 import { FormDisplay } from './FormDisplay'
 import { FormContainer } from './FormContainer'
 import { EditorToolBox } from './editorToolBox'
 import { ToolBox } from './ToolBox'
+import { ToolboxItem } from '../atoms/toolboxItem'
 import { useFormItems, serializeFormItems } from '../../utils/useFormItems'
-import { useDragDrop, applyDragEnd } from '../../utils/useDragDrop'
+import { useFormBuilderDragDrop } from '../../utils/useDragDrop'
 import type { Config } from '../../utils/config'
-import type { FormItem, SerializedFormItem, FormConfig, DragResult, FormBuilderHandle } from '../../types'
+import type { FormItem, SerializedFormItem, FormConfig, FormBuilderHandle } from '../../types'
+
+const customCollisionDetection: CollisionDetection = (args) => {
+  const closest = closestCorners(args)
+  const pointer = pointerWithin(args)
+
+  // Container dropzones get priority — they must win over the container's
+  // own sortable wrapper so items can be dropped INTO containers.
+  const containers = pointer.filter((c) => {
+    const dc = args.droppableContainers.find((d) => d.id === c.id)
+    const kind = (dc?.data?.current as { kind?: string } | undefined)?.kind
+    return kind === 'container-dropzone'
+  })
+  // Canvas root as fallback.
+  const canvas = pointer.filter((c) => {
+    const dc = args.droppableContainers.find((d) => d.id === c.id)
+    const kind = (dc?.data?.current as { kind?: string } | undefined)?.kind
+    return kind === 'canvas-root'
+  })
+
+  return [...containers, ...closest, ...canvas]
+}
 
 export interface FormBuilderProps {
   config: Config
@@ -33,22 +64,57 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
     changeOptions,
     addItem,
     reorderItems,
+    moveItem,
   } = useFormItems(config, initialData, onChange)
 
   const formItemsRef = useRef(formItems)
   useEffect(() => { formItemsRef.current = formItems }, [formItems])
 
-  const formContainerRef = useRef<HTMLDivElement | null>(null)
-  const toolboxDroppableId = useId()
-  const canvasDroppableId = useId()
+  const getItemIndex = useCallback(
+    (id: string, parentId?: string) => {
+      if (parentId) {
+        const parent = findItem(parentId)
+        return parent?.children?.findIndex((c) => c.id === id) ?? -1
+      }
+      return formItemsRef.current.findIndex((item) => item.id === id)
+    },
+    [findItem],
+  )
 
-  const { placeholderProps, onDragUpdate } = useDragDrop(formContainerRef)
-
-  const onContainerMount = useCallback(
-    (element: HTMLDivElement | null) => {
-      formContainerRef.current = element
+  const getParentId = useCallback(
+    (id: string): string | undefined => {
+      for (const item of formItemsRef.current) {
+        if (item.children?.some((c) => c.id === id)) return item.id
+      }
+      return undefined
     },
     [],
+  )
+
+  const getRootItemCount = useCallback(
+    () => formItemsRef.current.length,
+    [],
+  )
+
+  const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+    addItem,
+    reorderItems,
+    moveItem,
+    getItemIndex,
+    getParentId,
+    getRootItemCount,
+  )
+
+  const toolboxKeys = useMemo(
+    () => new Set(config.components.map((c) => c.key)),
+    [config.components],
+  )
+
+  const activeComponentKey = activeId && toolboxKeys.has(activeId) ? activeId : null
+  const draggedFormItem = activeId && !toolboxKeys.has(activeId) ? findItem(activeId) : null
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
 
   useImperativeHandle(ref, () => ({
@@ -64,7 +130,6 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
   const currentEditorIdRef = useRef<string | undefined>(undefined)
   const editorPanelRef = useRef<HTMLDivElement>(null)
 
-  // Keep ref in sync with currentEditor for stable callback references
   useEffect(() => {
     currentEditorIdRef.current = currentEditor?.id
     if (currentEditor) {
@@ -79,15 +144,14 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
     }
   }, [currentEditor])
 
-  // Clear currentEditor if the edited item was removed from formItems
   useEffect(() => {
     setCurrentEditor((prev) => {
-      if (prev && !formItems.some((item) => item.id === prev.id)) {
+      if (prev && !findItem(prev.id)) {
         return null
       }
       return prev
     })
-  }, [formItems])
+  }, [formItems, findItem])
 
   const onDeleteFormItem = useCallback(
     ({ id }: { id: string }) => {
@@ -119,16 +183,14 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
     [changeOptions],
   )
 
-  const onDragEnd = useCallback(
-    (d: DragResult) => {
-      applyDragEnd(d, addItem, reorderItems, { sourceDroppableId: toolboxDroppableId })
-    },
-    [addItem, reorderItems, toolboxDroppableId],
-  )
-
   return (
     <div className="fjorm form-builder-container">
-      <DragDropContext onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={customCollisionDetection}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      >
         {previewForm && (
           <FormDisplay
             form={form}
@@ -139,12 +201,9 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
         )}
         {!previewForm && (
           <FormContainer
-            placeholderProps={placeholderProps}
             formItems={formItems}
             onEditFormItem={onEditFormItem}
             onDeleteFormItem={onDeleteFormItem}
-            onContainerMount={onContainerMount}
-            droppableId={canvasDroppableId}
           />
         )}
 
@@ -153,7 +212,7 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
             previewForm={previewForm}
             setPreviewForm={setPreviewForm}
             formComponents={config.components}
-            droppableId={toolboxDroppableId}
+            activeDragKey={activeId}
           />
         )}
         {currentEditor && (
@@ -167,7 +226,29 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
             />
           </div>
         )}
-      </DragDropContext>
+
+        <DragOverlay dropAnimation={null}>
+          {activeComponentKey && (() => {
+            const c = config.getComponent(activeComponentKey)
+            if (!c) return null
+            return (
+              <div style={{ opacity: 0.92, cursor: 'grabbing', transform: 'rotate(2deg)' }}>
+                <ToolboxItem icon={c.icon} name={c.settings.label} />
+              </div>
+            )
+          })()}
+          {draggedFormItem && (
+            <div style={{ opacity: 0.85, cursor: 'grabbing' }}>
+              <draggedFormItem.component
+                settings={draggedFormItem.settings}
+                label={draggedFormItem.settings.label}
+                id="drag-overlay"
+                options={draggedFormItem.options}
+              />
+            </div>
+          )}
+        </DragOverlay>
+      </DndContext>
     </div>
   )
 })

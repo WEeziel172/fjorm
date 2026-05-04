@@ -176,3 +176,176 @@ describe('useFormItems', () => {
     expect(result.current.formItems[0].id).toBe('2')
   })
 })
+
+describe('useFormItems — nested/tree operations', () => {
+  function makeContainerReg(key = 'Container'): FormComponentRegistration {
+    return { key, settings: { label: 'C', name: 'c', columns: 2 }, icon: mockIcon, component: mockComponent, editor: mockComponent }
+  }
+
+  function setupWithContainer() {
+    const config = new Config()
+    config.addComponents([makeReg('Header'), makeReg('TextInput'), makeContainerReg()])
+    const onChange = vi.fn()
+    return { config, onChange }
+  }
+
+  it('addItem with parentId inserts into container children', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+
+    expect(result.current.formItems[0].children).toHaveLength(1)
+    expect(result.current.formItems[0].children![0].key).toBe('TextInput')
+  })
+
+  it('reorderItems with parentId reorders within container', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('Header', 0, containerId) })
+    act(() => { result.current.addItem('TextInput', 1, containerId) })
+
+    act(() => { result.current.reorderItems(0, 1, containerId) })
+
+    expect(result.current.formItems[0].children![0].key).toBe('TextInput')
+    expect(result.current.formItems[0].children![1].key).toBe('Header')
+  })
+
+  it('moveItem moves from top-level into container', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 1) })
+    const textId = result.current.formItems[1].id
+
+    act(() => { result.current.moveItem(textId, containerId, 0) })
+
+    expect(result.current.formItems).toHaveLength(1)
+    expect(result.current.formItems[0].children).toHaveLength(1)
+    expect(result.current.formItems[0].children![0].key).toBe('TextInput')
+  })
+
+  it('moveItem moves from container to top-level', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+    const textId = result.current.formItems[0].children![0].id
+
+    act(() => { result.current.moveItem(textId, undefined, 0) })
+
+    expect(result.current.formItems).toHaveLength(2)
+    expect(result.current.formItems[0].children).toBeUndefined()
+    expect(result.current.formItems[1].key).toBe('TextInput')
+  })
+
+  it('moveItem between two containers', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    act(() => { result.current.addItem('Container', 1) })
+    const firstContainerId = result.current.formItems[0].id
+    const secondContainerId = result.current.formItems[1].id
+    act(() => { result.current.addItem('TextInput', 0, firstContainerId) })
+    const textId = result.current.formItems[0].children![0].id
+
+    act(() => { result.current.moveItem(textId, secondContainerId, 0) })
+
+    expect(result.current.formItems[0].children).toHaveLength(0)
+    expect(result.current.formItems[1].children).toHaveLength(1)
+    expect(result.current.formItems[1].children![0].key).toBe('TextInput')
+  })
+
+  it('deleteItem removes nested child', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+    const textId = result.current.formItems[0].children![0].id
+
+    act(() => { result.current.deleteItem(textId) })
+
+    expect(result.current.formItems[0].children).toHaveLength(0)
+  })
+
+  it('deleteItem on container removes it and its children', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+
+    act(() => { result.current.deleteItem(containerId) })
+
+    expect(result.current.formItems).toHaveLength(0)
+  })
+
+  it('findItem locates nested item', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+    const textId = result.current.formItems[0].children![0].id
+
+    expect(result.current.findItem(textId)).toBeDefined()
+    expect(result.current.findItem(textId)!.key).toBe('TextInput')
+    expect(result.current.findItem(containerId)).toBeDefined()
+  })
+
+  it('changeSettings on nested item modifies it', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const { result } = renderHook(() => useFormItems(config, undefined, onChange))
+
+    act(() => { result.current.addItem('Container', 0) })
+    const containerId = result.current.formItems[0].id
+    act(() => { result.current.addItem('TextInput', 0, containerId) })
+    const textId = result.current.formItems[0].children![0].id
+
+    act(() => { result.current.changeSettings(textId, { label: 'Updated', name: 'updated' }) })
+
+    expect(result.current.formItems[0].children![0].settings.label).toBe('Updated')
+  })
+
+  it('initializes from nested initialData', () => {
+    const { config, onChange } = setupWithContainer()
+
+    const initialData = [
+      { id: 'c1', key: 'Container', settings: { label: 'Grid', name: 'grid' },
+        children: [
+          { id: 'f1', key: 'TextInput', settings: { label: 'Name', name: 'name' } },
+        ],
+      },
+    ]
+
+    const { result } = renderHook(() => useFormItems(config, initialData, onChange))
+
+    expect(result.current.formItems).toHaveLength(1)
+    expect(result.current.formItems[0].children).toHaveLength(1)
+    expect(result.current.formItems[0].children![0].id).toBe('f1')
+  })
+})

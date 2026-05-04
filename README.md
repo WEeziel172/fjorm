@@ -14,7 +14,7 @@
 📖 **Full documentation:** [weeziel172.github.io/fjorm](https://weeziel172.github.io/fjorm/)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/drag_and_drop-@hello--pangea/dnd-ff69b4" alt="DnD">
+  <img src="https://img.shields.io/badge/drag_and_drop-@dnd--kit/core-ff69b4" alt="DnD">
   <img src="https://img.shields.io/badge/build-tsup-black" alt="tsup">
   <img src="https://img.shields.io/badge/test-vitest-6e9f18" alt="vitest">
 </p>
@@ -29,7 +29,7 @@
 - **UI-framework agnostic** — register your own display components per field type
 - **JSON serialization** — export/import form structure as portable JSON
 - **TypeScript-first** — full type definitions for the component registry and all APIs
-- **Lightweight** — peer deps: React 19+, react-dom 19+; runtime deps: `@hello-pangea/dnd`, `uuid`
+- **Lightweight** — peer deps: React 19+, react-dom 19+; runtime deps: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `uuid`
 
 ---
 
@@ -39,7 +39,7 @@
 npm install fjorm
 ```
 
-Fjorm requires React 19+ and react-dom 19+ as peer dependencies. Runtime dependencies (`@hello-pangea/dnd`, `uuid`) are installed automatically:
+Fjorm requires React 19+ and react-dom 19+ as peer dependencies. Runtime dependencies (`@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `uuid`) are installed automatically:
 
 ```bash
 npm install fjorm react react-dom
@@ -65,7 +65,7 @@ export default function App() {
 }
 ```
 
-That's it — you get a working drag-and-drop form builder with four built-in field types: Header, Paragraph, TextInput, and SelectInput.
+That's it — you get a working drag-and-drop form builder with five built-in field types: Header, Paragraph, TextInput, SelectInput, and Container (for grid/column layouts).
 
 ---
 
@@ -130,6 +130,114 @@ Each example includes a `FormWrapper`, several field types, editor definitions, 
 
 ---
 
+## 📐 Layout Containers — Grids, Rows, and Columns
+
+Fjorm supports **nested layouts** through `Container` components. A Container acts as a droppable zone within the canvas — drag components _into_ it to build grid, column, or section-based form layouts. Containers can be nested (container within container) for complex multi-level structures.
+
+### Built-in Container
+
+The default `formComponents` array includes a `Container` component. Set `isContainer: true` to enable nested droppable zones. The layout is controlled by your component — the built-in example supports Grid, Flex Row, and Flex Column via the `layout` setting:
+
+```tsx
+{
+  key: 'Container',
+  isContainer: true,
+  settings: { label: 'Container', name: 'container', layout: 'grid', columns: 2, gap: '0.75rem' },
+  icon: GridIcon,
+  component: ExampleContainer,
+  editor: {
+    label: 'EditorInput',
+    name: 'EditorInput',
+    layout: { type: 'EditorSelect', options: [
+      { value: 'grid', label: 'Grid' },
+      { value: 'flex-row', label: 'Flex Row' },
+      { value: 'flex-column', label: 'Flex Column' },
+    ]},
+    columns: 'EditorInput',
+    gap: 'EditorInput',
+  },
+  providesValue: false,
+}
+```
+
+Drag a Container onto the canvas, then drag other components (TextInput, Select, etc.) _into_ the container body. Each container automatically gets a nested drop zone. The `children` prop is passed to your component — you control the layout.
+
+### Framework-Specific Grid Containers
+
+Replace the built-in CSS Grid container with your UI framework's grid system by providing a custom `component`:
+
+```tsx
+// Ant Design — Row/Col grid
+function AntRowContainer({ children, settings }: FormComponentProps) {
+  return (
+    <Row gutter={16}>
+      {React.Children.map(children, (child) => (
+        <Col span={24 / ((settings.columns as number) || 2)}>{child}</Col>
+      ))}
+    </Row>
+  )
+}
+
+// Mantine — SimpleGrid
+function MantineGridContainer({ children, settings }: FormComponentProps) {
+  return (
+    <SimpleGrid cols={(settings.columns as number) || 2}>
+      {children}
+    </SimpleGrid>
+  )
+}
+
+// MUI — Grid container
+function MuiGridContainer({ children, settings }: FormComponentProps) {
+  const cols = (settings.columns as number) || 2
+  return (
+    <Grid container spacing={2}>
+      {React.Children.map(children, (child) => (
+        <Grid size={12 / cols}>{child}</Grid>
+      ))}
+    </Grid>
+  )
+}
+```
+
+The `children` prop contains rendered `RecursiveItem` child components. The Container infrastructure (nested `SortableContext`, inner `useDroppable` zone, tree serialization) is framework-agnostic — only the visual layout component needs to be swapped.
+
+### Data Model
+
+Containers use a tree structure. Each `FormItem` and `SerializedFormItem` has an optional `children` array:
+
+```ts
+interface FormItem {
+  id: string
+  key: string
+  settings: FormComponentSettings
+  // ...
+  children?: FormItem[]  // nested child items (for containers)
+}
+
+interface SerializedFormItem {
+  id: string
+  key: string
+  settings: FormComponentSettings
+  // ...
+  children?: SerializedFormItem[]
+}
+```
+
+Serialization and deserialization handle nesting automatically. Drag-and-drop between containers, from canvas to container, and container to canvas are all supported.
+
+### Drag-and-Drop Behavior
+
+- **Toolbox → Container**: Adds a new component as a child of that container
+- **Canvas → Container**: Moves an existing item into the container
+- **Container → Canvas**: Moves an item out of the container to the top level
+- **Within Container**: Reorder children inside the same container
+- **Between Containers**: Move an item from one container to another
+
+All moves preserve the item's settings, options, and values.
+
+---
+
 ## 📖 API Reference
 
 ### `Config`
@@ -154,18 +262,19 @@ Each registered field type follows this shape:
 interface FormComponentRegistration {
   key: string // unique identifier, e.g. "TextInput"
   settings: FormComponentSettings // default field settings (label, name, …)
-  icon: ComponentType // icon shown in the toolbox
+  icon?: ComponentType // icon shown in the toolbox
   component: ComponentType<FormComponentProps> // display component
-  editor: ComponentType<EditorProps> | Record<string, string> // editor definition
+  editor: ComponentType<EditorProps> | EditorFieldMap // editor definition
   options?: FormComponentOption[] // default options (for selects)
   providesValue?: boolean // set to false for display-only components (headers, paragraphs)
+  isContainer?: boolean // when true, renders a nested droppable zone
 }
 ```
 
 **Two editor modes:**
 
 - **Function** — pass any React component receiving `EditorProps`
-- **Object** — declarative key→editor-type mapping, e.g. `{ label: 'EditorInput', required: 'EditorCheckbox' }`. Available editor types: `EditorInput`, `EditorCheckbox`, `EditorTextArea`, `EditorOptions`.
+- **Object** — declarative key→editor-type mapping, e.g. `{ label: 'EditorInput', required: 'EditorCheckbox' }`. Values can be strings (`'EditorInput'`) or objects with options (`{ type: 'EditorSelect', options: [...] }`). Available editor types: `EditorInput`, `EditorCheckbox`, `EditorTextArea`, `EditorOptions`, `EditorSelect`.
 
 ### `FormBuilder`
 
@@ -287,6 +396,7 @@ Build your own display components (see Adapter Pattern above) — the library pr
 | `EditorCheckbox` | Component | Boolean toggle editor field |
 | `EditorTextArea` | Component | Multi-line text editor field |
 | `EditorOptions` | Component | Options list editor (add/remove/edit rows) |
+| `EditorSelect` | Component | Dropdown select editor with configurable options |
 | `EditorCompiler` | Component | Converts `EditorFieldMap` to rendered editor components |
 | `FormComponentInput` | Component | Default text input display |
 | `FormComponentSelect` | Component | Default select dropdown display |
@@ -300,18 +410,19 @@ Build your own display components (see Adapter Pattern above) — the library pr
 | `Tag` | Component | Small pill badge |
 | `Option` | Component | Single option row (value + title) |
 | `ToolboxItem` | Component | Toolbox palette card |
+| `FormComponentContainer` | Component | Minimal container display shell |
+| `RecursiveItem` | Component | Dispatches container vs regular item rendering |
 
 **Hooks & Utilities:**
 
 | Export | Kind | Description |
 |---|---|---|
-| `formComponents` | Value | Default component definitions (Header, Paragraph, TextInput, SelectInput) |
+| `formComponents` | Value | Default component definitions (Header, Paragraph, TextInput, SelectInput, Container) |
 | `serializeFormItems` | Function | Convert form items to portable JSON |
 | `deserializeFormItems` | Function | Rehydrate JSON back to form items |
-| `applyDragEnd` | Function | Process drag-and-drop result |
 | `getSetting` | Function | Type-safe settings access helper |
 | `useFormItems` | Hook | Form items state management |
-| `useDragDrop` | Hook | Drag placeholder positioning |
+| `useFormBuilderDragDrop` | Hook | DnD event handling via @dnd-kit |
 | `useEditorChange` | Hook | Editor change handler |
 | `useEditorState` | Hook | Local editor state |
 | `useOptionsManager` | Hook | Options list CRUD |
@@ -326,13 +437,17 @@ import type {
   FormComponentProps,
   EditorDefinition,
   EditorFieldMap,
+  EditorFieldDescriptor,
   FormComponentRegistration,
   FormItem,
   SerializedFormItem,
   FormConfig,
   FormConfigProps,
   EditorChangePayload,
-  DragResult,
+  DragEndPayload,
+  DndActive,
+  DndOver,
+  DndItemData,
   FormBuilderHandle,
 } from 'fjorm'
 ```
@@ -387,7 +502,7 @@ fjorm/
 │   ├── utils/
 │   │   ├── config.ts         # Config class
 │   │   ├── getSetting.ts     # type-safe settings access
-│   │   ├── useDragDrop.ts    # useDragDrop hook + applyDragEnd
+│   │   ├── useDragDrop.ts    # useFormBuilderDragDrop hook
 │   │   ├── useEditorChange.ts # editor change handler
 │   │   ├── useEditorState.ts # local editor state hook
 │   │   ├── useFormItems.ts   # useFormItems + serialization
@@ -545,7 +660,7 @@ The declarative object form (`{ label: 'EditorInput', required: 'EditorCheckbox'
 
 ### How Drag-and-Drop Works
 
-The toolbox (`droppableId="list"`) contains available component types. The canvas (`droppableId="a"`) holds placed form items. Dragging from the toolbox to the canvas calls `addFormItem`, which clones the component definition, assigns a UUID, and inserts it into the form items array. Within the canvas, items can be reordered. Delete and edit actions are available via hover overlays on each item.
+Built on **@dnd-kit** (`DndContext`, `useSortable`, `useDroppable`, `DragOverlay`). The toolbox uses `useDraggable` for palette items. The canvas uses `SortableContext` + `useSortable` for reorderable form items. Components with `isContainer: true` get a nested `useDroppable` zone wrapped in their own `SortableContext`. A `DragOverlay` renders a drag preview that follows the cursor. Custom collision detection combines `closestCorners` (for sortable precision) with `pointerWithin` (for container/empty-area detection).
 
 ### Component Registration Lifecycle
 

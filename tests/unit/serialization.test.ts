@@ -98,4 +98,91 @@ describe('deserializeFormItems', () => {
     expect(result[0].id).toBeTruthy()
     expect(result[0].id).not.toBe('')
   })
+
+  it('serializes nested children', () => {
+    const items: FormItem[] = [
+      {
+        id: '1', key: 'Container', settings: { label: 'Grid', name: 'container', columns: 2 },
+        icon: mockIcon, component: mockComponent, editor: mockComponent,
+        children: [
+          { id: '2', key: 'TextInput', settings: { label: 'Name', name: 'name' }, icon: mockIcon, component: mockComponent, editor: mockComponent },
+        ],
+      },
+    ]
+    const result = serializeFormItems(items)
+    expect(result).toEqual([
+      {
+        id: '1', key: 'Container', settings: { label: 'Grid', name: 'container', columns: 2 },
+        children: [
+          { id: '2', key: 'TextInput', settings: { label: 'Name', name: 'name' } },
+        ],
+      },
+    ])
+  })
+
+  it('serializes deeply nested children', () => {
+    const items: FormItem[] = [
+      {
+        id: 'outer', key: 'Container', settings: { label: 'Outer', name: 'outer', columns: 2 },
+        icon: mockIcon, component: mockComponent, editor: mockComponent,
+        children: [
+          {
+            id: 'inner', key: 'Container', settings: { label: 'Inner', name: 'inner', columns: 1 },
+            icon: mockIcon, component: mockComponent, editor: mockComponent,
+            children: [
+              { id: 'leaf', key: 'TextInput', settings: { label: 'Field', name: 'field' }, icon: mockIcon, component: mockComponent, editor: mockComponent },
+            ],
+          },
+        ],
+      },
+    ]
+    const result = serializeFormItems(items)
+    expect(result[0].children).toHaveLength(1)
+    expect(result[0].children![0].children).toHaveLength(1)
+    expect(result[0].children![0].children![0].key).toBe('TextInput')
+  })
+
+  it('deserializes nested children from serialized data', () => {
+    const config = new Config()
+    config.addComponents([makeRegistration('Container'), makeRegistration('TextInput')])
+
+    const data = [
+      { id: '1', key: 'Container', settings: { label: 'Grid', name: 'container' },
+        children: [
+          { id: '2', key: 'TextInput', settings: { label: 'Name', name: 'name' } },
+        ],
+      },
+    ]
+    const result = deserializeFormItems(data, config)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].key).toBe('Container')
+    expect(result[0].children).toHaveLength(1)
+    expect(result[0].children![0].key).toBe('TextInput')
+    expect(result[0].children![0].id).toBe('2')
+  })
+
+  it('round-trips nested structure through serialize/deserialize', () => {
+    const config = new Config()
+    config.addComponents([makeRegistration('Container'), makeRegistration('TextInput'), makeRegistration('Header')])
+
+    const items: FormItem[] = [
+      {
+        id: 'c1', key: 'Container', settings: { label: 'Section', name: 'section', columns: 2 },
+        icon: mockIcon, component: mockComponent, editor: mockComponent,
+        children: [
+          { id: 'f1', key: 'TextInput', settings: { label: 'Email', name: 'email' }, icon: mockIcon, component: mockComponent, editor: mockComponent },
+          { id: 'f2', key: 'Header', settings: { label: 'Title', name: 'title' }, icon: mockIcon, component: mockComponent, editor: mockComponent },
+        ],
+      },
+    ]
+
+    const serialized = serializeFormItems(items)
+    const deserialized = deserializeFormItems(serialized, config)
+
+    expect(deserialized).toHaveLength(1)
+    expect(deserialized[0].children).toHaveLength(2)
+    expect(deserialized[0].children![0].settings.label).toBe('Email')
+    expect(deserialized[0].children![1].key).toBe('Header')
+  })
 })

@@ -7,7 +7,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   clean: true,
-  external: ['react', 'react-dom', '@hello-pangea/dnd'],
+  external: ['react', 'react-dom', '@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
   esbuildOptions(options) {
     options.jsx = 'automatic'
   },

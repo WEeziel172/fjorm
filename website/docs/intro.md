@@ -12,11 +12,12 @@ Fjorm lets you build visual, drag-and-drop form editors in React. Drag component
 
 - **Visual form builder** — drag components from a palette onto a canvas
 - **Inline property editing** — edit labels, placeholders, required flags, select options
+- **Nested layouts** — grid/column containers with their own drop zones for complex form layouts
 - **Preview mode** — toggle between builder and rendered-form views
 - **UI-framework agnostic** — register your own display components per field type
-- **JSON serialization** — export/import form structure as portable JSON
+- **JSON serialization** — export/import form structure as portable JSON (supports nested trees)
 - **TypeScript-first** — full type definitions for all APIs
-- **Lightweight** — peer-deps only: React 19+ and react-dom 19+; runtime deps: `@hello-pangea/dnd`, `uuid`
+- **Lightweight** — peer-deps only: React 19+ and react-dom 19+; runtime deps: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `uuid`
 
 ## Install
 
@@ -42,7 +43,7 @@ export default function App() {
 }
 ```
 
-This gives you a working drag-and-drop form builder with four built-in field types: Header, Paragraph, TextInput, and SelectInput.
+This gives you a working drag-and-drop form builder with five built-in field types: Header, Paragraph, TextInput, SelectInput, and Container (for grid/column layouts).
 
 ## Project Structure
 
