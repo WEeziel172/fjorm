@@ -14,6 +14,7 @@ yarn format         # prettier --write 'src/**/*.{ts,tsx,css}' 'tests/**/*.{ts,t
 ```
 
 Demo: `cd demo && yarn install && yarn dev`
+Dev (HMR): `cd development && yarn install && yarn dev`
 Website: `cd website && yarn install && yarn start`
 
 ## Architecture
@@ -29,7 +30,7 @@ Website: `cd website && yarn install && yarn start`
 
 `EditorCompiler` converts `EditorFieldMap` objects into rendered editor components at runtime.
 
-**Data flow:** `FormBuilder` → `useFormItems` hook manages state → `@hello-pangea/dnd` drives drag-and-drop → `applyDragEnd` handles add/reorder → `serializeFormItems` strips React-specific fields for JSON export.
+**Data flow:** `FormBuilder` → `useFormItems` hook manages state → `@dnd-kit` drives drag-and-drop (`DndContext`, `useSortable`, `useDroppable`, `DragOverlay`) → `useFormBuilderDragDrop` handles add/reorder/move → `serializeFormItems` strips React-specific fields for JSON export.
 
 ## Source Structure (`src/`)
 
@@ -41,7 +42,7 @@ src/
 
   utils/
     config.ts           — Config class (component registry)
-    useDragDrop.ts      — useDragDrop hook + applyDragEnd
+    useDragDrop.ts      — useFormBuilderDragDrop hook
     useEditorChange.ts  — single useEditorChange hook
     useEditorState.ts   — local editor state hook
     useFormItems.ts     — useFormItems + serialization
@@ -76,14 +77,14 @@ src/
 
 Main entry: `src/index.ts`. Everything consumed by users must be exported here.
 
-Key exports: `Config`, `FormBuilder`, `FormDisplay`, `FormContainer`, `ToolBox`, `EditorToolBox`, `EditorContainer`, `FormComponentWrapper`, `EditorInput`, `EditorCheckbox`, `EditorTextArea`, `EditorOptions`, `EditorCompiler`, `FormComponentInput`, `FormComponentSelect`, `FormComponentHeader`, `FormComponentParagraph`, `ErrorBoundary`, `FormComponentEditorContainer`, `FormItemLabel`, `FormItemDisplay`, `ComponentEditActions`, `Tag`, `Option`, `ToolboxItem`, `getSetting`, `formComponents`, hooks (`useEditorChange`, `useFormItems`, `useDragDrop`, `useEditorState`, `useOptionsManager`), serialization (`serializeFormItems`, `deserializeFormItems`, `applyDragEnd`), and all types.
+Key exports: `Config`, `FormBuilder`, `FormDisplay`, `FormContainer`, `ToolBox`, `EditorToolBox`, `EditorContainer`, `FormComponentWrapper`, `EditorInput`, `EditorCheckbox`, `EditorTextArea`, `EditorOptions`, `EditorSelect`, `EditorCompiler`, `FormComponentInput`, `FormComponentSelect`, `FormComponentHeader`, `FormComponentParagraph`, `ErrorBoundary`, `FormComponentEditorContainer`, `FormItemLabel`, `FormItemDisplay`, `ComponentEditActions`, `Tag`, `Option`, `ToolboxItem`, `FormComponentContainer`, `RecursiveItem`, `getSetting`, `formComponents`, hooks (`useEditorChange`, `useFormItems`, `useFormBuilderDragDrop`, `useEditorState`, `useOptionsManager`), serialization (`serializeFormItems`, `deserializeFormItems`), and all types.
 
 ## Peer Dependencies
 
 - `react` ^19.0.0
 - `react-dom` ^19.0.0
 
-Runtime deps: `@hello-pangea/dnd` (drag-and-drop), `uuid`.
+Runtime deps: `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities` (drag-and-drop), `uuid`.
 
 ## CI/CD
 

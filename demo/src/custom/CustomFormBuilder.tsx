@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { DragDropContext } from '@hello-pangea/dnd'
-import type { DropResult } from '@hello-pangea/dnd'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { pointerWithin } from '@dnd-kit/core'
 import {
   Config, ToolBox, FormContainer, EditorToolBox,
-  useFormItems, useDragDrop, applyDragEnd,
+  useFormItems, useFormBuilderDragDrop,
   serializeFormItems, deserializeFormItems,
   type FormItem,
 } from 'fjorm'
@@ -24,14 +24,30 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
   })[0]
 
   const {
-    formItems, setFormItems, addItem, reorderItems,
+    formItems, setFormItems, addItem, reorderItems, moveItem,
     deleteItem, findItem, changeSettings, changeOptions,
   } = useFormItems(config, undefined, (serialized) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized))
   })
 
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
+  const getItemIndex = useCallback(
+    (id: string) => formItems.findIndex((item) => item.id === id),
+    [formItems],
+  )
+
+  const getContainerChildrenCount = useCallback(
+    (containerId: string) => {
+      const container = findItem(containerId)
+      return container?.children?.length ?? 0
+    },
+    [findItem],
+  )
+
+  const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+    addItem, reorderItems, moveItem,
+    getItemIndex, getContainerChildrenCount,
+  )
+
   const [editingItem, setEditingItem] = useState<FormItem | null>(null)
   const [importJson, setImportJson] = useState('')
 
@@ -52,9 +68,19 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
     onFormChange?.(formItems)
   }, [formItems, onFormChange])
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    applyDragEnd(result as any, addItem, reorderItems, { sourceDroppableId: 'toolbox' })
-  }, [addItem, reorderItems])
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  )
+
+  const toolboxKeys = useMemo(
+    () => new Set(config.components.map((c) => c.key)),
+    [config.components],
+  )
+
+  const activeComponentKey = activeId && toolboxKeys.has(activeId) ? activeId : null
+  const draggingComponent = activeComponentKey
+    ? config.getComponent(activeComponentKey)
+    : undefined
 
   const currentEditor = editingItem
     ? (findItem(editingItem.id) ?? editingItem)
@@ -113,17 +139,19 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
 
       {/* Main area */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={pointerWithin}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+        >
           <FormContainer
             formItems={formItems}
-            placeholderProps={placeholderProps}
-            droppableId="list"
             onEditFormItem={({ id }) => {
               const item = findItem(id)
               if (item) setEditingItem(item)
             }}
             onDeleteFormItem={({ id }) => deleteItem(id)}
-            onContainerMount={(el) => { containerRef.current = el }}
           />
           {editingItem ? (
             <EditorToolBox
@@ -137,10 +165,22 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
               formComponents={customComponents as FormComponentRegistration[]}
               setPreviewForm={() => {}}
               previewForm={false}
-              droppableId="toolbox"
+              activeDragKey={activeId}
             />
           )}
-        </DragDropContext>
+          <DragOverlay dropAnimation={null}>
+            {draggingComponent ? (
+              <div style={{ opacity: 0.85, cursor: 'grabbing' }}>
+                <draggingComponent.component
+                  settings={draggingComponent.settings}
+                  label={draggingComponent.settings.label}
+                  id="drag-overlay"
+                  options={draggingComponent.options}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
     </div>
   )

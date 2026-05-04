@@ -38,7 +38,12 @@ export interface FormComponentProps {
   editor?: EditorDefinition
 }
 
-export type EditorFieldMap = Record<string, string>
+export interface EditorFieldDescriptor {
+  type: string
+  options?: { value: string; label: string }[]
+}
+
+export type EditorFieldMap = Record<string, string | EditorFieldDescriptor>
 
 export type EditorDefinition =
   | ComponentType<EditorProps>
@@ -54,11 +59,14 @@ export interface FormComponentRegistration<
   editor: EditorDefinition
   options?: FormComponentOption[]
   providesValue?: boolean
+  /** When true, this item renders a nested droppable zone and passes children to the component. */
+  isContainer?: boolean
 }
 
 export interface FormItem extends FormComponentRegistration {
   id: string
   value?: unknown
+  children?: FormItem[]
 }
 
 export interface SerializedFormItem {
@@ -67,6 +75,7 @@ export interface SerializedFormItem {
   settings: FormComponentSettings
   options?: FormComponentOption[]
   value?: unknown
+  children?: SerializedFormItem[]
 }
 
 export interface FormConfigProps {
@@ -85,6 +94,32 @@ export interface EditorChangePayload {
   name: string
 }
 
+/** Data attached to draggable/droppable elements via dnd-kit's `data` prop. */
+export interface DndItemData {
+  kind: 'toolbox-item' | 'canvas-item' | 'container-dropzone' | 'canvas-root'
+  componentKey?: string
+  containerId?: string
+}
+
+/** The active (dragged) item in a dnd-kit event. */
+export interface DndActive {
+  id: string
+  data: { current: DndItemData | undefined }
+}
+
+/** The over (hover target) item in a dnd-kit event. */
+export interface DndOver {
+  id: string
+  data: { current: DndItemData | undefined }
+}
+
+/** Shape passed to onDragEnd handler from dnd-kit's DragEndEvent. */
+export interface DragEndPayload {
+  active: DndActive
+  over: DndOver
+}
+
+/** @deprecated Use DragEndPayload instead. */
 export interface DragResult {
   draggableId: string
   source: { droppableId: string; index: number }

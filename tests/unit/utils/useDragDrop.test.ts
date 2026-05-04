@@ -1,167 +1,144 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { createRef } from 'react'
-import { useDragDrop, applyDragEnd } from '../../../src/utils/useDragDrop'
+import { useFormBuilderDragDrop } from '../../../src/utils/useDragDrop'
+import type { DragEndEvent } from '@dnd-kit/core'
 
-describe('useDragDrop', () => {
-  it('initializes with null placeholderProps', () => {
-    const ref = createRef<HTMLDivElement>()
-    const { result } = renderHook(() => useDragDrop(ref))
+function makeEvent(active: { id: string; kind: string; componentKey?: string }, over: { id: string; kind: string; containerId?: string } | null): DragEndEvent {
+  return {
+    active: { id: active.id, data: { current: { kind: active.kind, componentKey: active.componentKey } } },
+    over: over ? { id: over.id, data: { current: { kind: over.kind, containerId: over.containerId } } } : null,
+    collisions: [],
+    delta: { x: 0, y: 0 },
+    activatorEvent: new Event('pointerup') as unknown as PointerEvent,
+  } as unknown as DragEndEvent
+}
 
-    expect(result.current.placeholderProps).toBeNull()
+function makeStartEvent(id: string): { active: { id: string } } {
+  return { active: { id } } as unknown as { active: { id: string } }
+}
+
+describe('useFormBuilderDragDrop', () => {
+  const noop = () => undefined
+  const negOne = () => -1
+  const zero = () => 0
+
+  it('initializes with null activeId', () => {
+    const { result } = renderHook(() =>
+      useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, zero),
+    )
+    expect(result.current.activeId).toBeNull()
   })
 
-  it('onDragUpdate no-ops when no destination', () => {
-    const ref = createRef<HTMLDivElement>()
-    const { result } = renderHook(() => useDragDrop(ref))
+  it('onDragStart sets activeId', () => {
+    const { result } = renderHook(() =>
+      useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, zero),
+    )
 
     act(() => {
-      result.current.onDragUpdate({ draggableId: 'x', destination: null })
+      result.current.onDragStart(makeStartEvent('test-id') as Parameters<typeof result.current.onDragStart>[0])
     })
-
-    expect(result.current.placeholderProps).toBeNull()
+    expect(result.current.activeId).toBe('test-id')
   })
 
-  it('computes placeholderProps when container has children and destination is provided', () => {
-    const container = document.createElement('div')
-    const child = document.createElement('div')
-    child.setAttribute('data-rbd-drag-handle-draggable-id', 'test-id')
-    Object.defineProperty(child, 'clientHeight', { value: 50, configurable: true })
-    Object.defineProperty(container, 'clientWidth', { value: 400, configurable: true })
-    container.appendChild(child)
-    document.body.appendChild(container)
-
-    const ref = { current: container }
-    const { result } = renderHook(() => useDragDrop(ref))
-
-    act(() => {
-      result.current.onDragUpdate({
-        draggableId: 'test-id',
-        destination: { index: 0 },
+  describe('onDragEnd', () => {
+    it('clears activeId on drag end', () => {
+      const addItem = vi.fn()
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), negOne, noop, zero),
+      )
+      act(() => {
+        result.current.onDragStart(makeStartEvent('test-id') as Parameters<typeof result.current.onDragStart>[0])
       })
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'test', kind: 'toolbox-item', componentKey: 'Header' },
+          { id: 'item1', kind: 'canvas-item' },
+        ))
+      })
+      expect(result.current.activeId).toBeNull()
     })
 
-    expect(result.current.placeholderProps).not.toBeNull()
-    expect(result.current.placeholderProps?.clientHeight).toBe(50)
+    it('adds item when dragging from toolbox to canvas', () => {
+      const addItem = vi.fn()
+      const reorderItems = vi.fn()
+      const moveItem = vi.fn()
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, reorderItems, moveItem, () => 0, noop, zero),
+      )
 
-    document.body.removeChild(container)
-  })
-})
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'item1', kind: 'canvas-item' },
+        ))
+      })
 
-describe('applyDragEnd', () => {
-  it('returns false when dragging within toolbox', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
+      expect(addItem).toHaveBeenCalledWith('TextInput', 0, undefined)
+    })
 
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'list', index: 0 }, destination: { droppableId: 'list', index: 1 } },
-      addItem,
-      reorderItems,
-    )
+    it('adds item to container when dropping from toolbox into container', () => {
+      const addItem = vi.fn()
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), negOne, noop, zero),
+      )
 
-    expect(changed).toBe(false)
-    expect(addItem).not.toHaveBeenCalled()
-    expect(reorderItems).not.toHaveBeenCalled()
-  })
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'container-abc', kind: 'container-dropzone', containerId: 'abc' },
+        ))
+      })
 
-  it('returns false when destination is null', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
+      expect(addItem).toHaveBeenCalledWith('TextInput', 0, 'abc')
+    })
 
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'list', index: 0 }, destination: null },
-      addItem,
-      reorderItems,
-    )
+    it('reorders when dragging canvas item over another canvas item', () => {
+      const reorderItems = vi.fn()
+      const getItemIndex = vi.fn((id: string) => (id === 'item1' ? 0 : id === 'item2' ? 2 : -1))
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), reorderItems, vi.fn(), getItemIndex, noop, zero),
+      )
 
-    expect(changed).toBe(false)
-  })
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'item1', kind: 'canvas-item' },
+          { id: 'item2', kind: 'canvas-item' },
+        ))
+      })
 
-  it('adds item when dragging from toolbox to canvas', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
+      expect(reorderItems).toHaveBeenCalledWith(0, 2)
+    })
 
-    const changed = applyDragEnd(
-      { draggableId: 'Header', source: { droppableId: 'list', index: 0 }, destination: { droppableId: 'a', index: 0 } },
-      addItem,
-      reorderItems,
-    )
+    it('no-ops when over is null', () => {
+      const addItem = vi.fn()
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), negOne, noop, zero),
+      )
 
-    expect(changed).toBe(true)
-    expect(addItem).toHaveBeenCalledWith('Header', 0)
-  })
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          null,
+        ))
+      })
 
-  it('reorders when dragging within canvas', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
+      expect(addItem).not.toHaveBeenCalled()
+    })
 
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'a', index: 0 }, destination: { droppableId: 'a', index: 2 } },
-      addItem,
-      reorderItems,
-    )
+    it('moves item from canvas to container', () => {
+      const moveItem = vi.fn()
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), moveItem, negOne, noop, zero),
+      )
 
-    expect(changed).toBe(true)
-    expect(reorderItems).toHaveBeenCalledWith(0, 2)
-  })
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'child1', kind: 'canvas-item' },
+          { id: 'container-xyz', kind: 'container-dropzone', containerId: 'xyz' },
+        ))
+      })
 
-  it('does nothing when dragging from canvas to toolbox', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
-
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'a', index: 0 }, destination: { droppableId: 'list', index: 0 } },
-      addItem,
-      reorderItems,
-    )
-
-    expect(changed).toBe(false)
-    expect(addItem).not.toHaveBeenCalled()
-    expect(reorderItems).not.toHaveBeenCalled()
-  })
-
-  it('uses custom sourceDroppableId', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
-
-    const changed = applyDragEnd(
-      { draggableId: 'TextInput', source: { droppableId: 'custom-toolbox', index: 0 }, destination: { droppableId: 'custom-canvas', index: 2 } },
-      addItem,
-      reorderItems,
-      { sourceDroppableId: 'custom-toolbox' },
-    )
-
-    expect(changed).toBe(true)
-    expect(addItem).toHaveBeenCalledWith('TextInput', 2)
-  })
-
-  it('reorders within custom canvas droppableId', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
-
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'my-canvas', index: 1 }, destination: { droppableId: 'my-canvas', index: 3 } },
-      addItem,
-      reorderItems,
-      { sourceDroppableId: 'my-toolbox' },
-    )
-
-    expect(changed).toBe(true)
-    expect(reorderItems).toHaveBeenCalledWith(1, 3)
-  })
-
-  it('returns false when dragging from unknown source with custom IDs', () => {
-    const addItem = vi.fn()
-    const reorderItems = vi.fn()
-
-    const changed = applyDragEnd(
-      { draggableId: 'x', source: { droppableId: 'somewhere-else', index: 0 }, destination: { droppableId: 'custom-canvas', index: 0 } },
-      addItem,
-      reorderItems,
-      { sourceDroppableId: 'custom-toolbox' },
-    )
-
-    expect(changed).toBe(false)
-    expect(addItem).not.toHaveBeenCalled()
+      expect(moveItem).toHaveBeenCalledWith('child1', 'xyz', 0)
+    })
   })
 })

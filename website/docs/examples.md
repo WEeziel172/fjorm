@@ -40,7 +40,7 @@ cd demo && yarn install && yarn dev
 - Custom field types built from scratch (Slider, TagInput, ColorPicker, Divider, Rating)
 - Manual composition of `ToolBox` + `FormContainer` + `EditorToolBox`
 - JSON export/import via `serializeFormItems` / `deserializeFormItems`
-- `useFormItems`, `useDragDrop`, `applyDragEnd` for state and DnD
+- `useFormItems`, `useFormBuilderDragDrop` for state and DnD
 - Custom editor component implementing `EditorProps`
 - `ErrorBoundary`, `FormComponentEditorContainer`, `useEditorChange` in practice
 - localStorage autosave

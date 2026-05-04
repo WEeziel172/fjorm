@@ -1,15 +1,47 @@
 import { useState } from 'react'
 import {
-  TextInput, Textarea, Select, NumberInput, Checkbox, Radio, Switch,
-  Title, Text, Container, Button, Box, Group, Badge, ActionIcon, Flex,
+  TextInput,
+  Textarea,
+  Select,
+  NumberInput,
+  Checkbox,
+  Radio,
+  Switch,
+  Title,
+  Text,
+  Container,
+  Button,
+  Box,
+  Group,
+  Badge,
+  ActionIcon,
+  Flex,
+  SimpleGrid,
 } from '@mantine/core'
 import {
-  FaHeading, FaParagraph, FaFont, FaList, FaCheckSquare,
-  FaHashtag, FaCalendar, FaDotCircle, FaToggleOn, FaAlignLeft, FaExchangeAlt,
+  FaHeading,
+  FaParagraph,
+  FaFont,
+  FaList,
+  FaCheckSquare,
+  FaHashtag,
+  FaCalendar,
+  FaDotCircle,
+  FaToggleOn,
+  FaAlignLeft,
+  FaExchangeAlt,
+  FaTh,
 } from 'react-icons/fa'
 import {
-  EditorInput, EditorOptions, FormComponentEditorContainer, useEditorChange,
-  type FormComponentRegistration, type FormComponentProps, type FormConfig, type FormConfigProps, type EditorProps,
+  EditorInput,
+  EditorOptions,
+  FormComponentEditorContainer,
+  useEditorChange,
+  type FormComponentRegistration,
+  type FormComponentProps,
+  type FormConfig,
+  type FormConfigProps,
+  type EditorProps,
 } from 'fjorm'
 
 export function FormWrapper({ children, onSubmit, fjormValues, ...rest }: FormConfigProps) {
@@ -19,7 +51,9 @@ export function FormWrapper({ children, onSubmit, fjormValues, ...rest }: FormCo
     const data: Record<string, unknown> = {}
 
     // Collect native input values
-    formData.forEach((value, key) => { data[key] = value })
+    formData.forEach((value, key) => {
+      data[key] = value
+    })
 
     // Overlay values from complex components (onChangeValue callbacks)
     if (fjormValues) {
@@ -48,49 +82,69 @@ export function FormWrapper({ children, onSubmit, fjormValues, ...rest }: FormCo
 // --- Display Components ---
 
 function MantineHeader({ settings }: FormComponentProps) {
-  return <Title order={2} mt="lg">{settings.label}</Title>
+  return (
+    <Title order={2} mt="lg">
+      {settings.label}
+    </Title>
+  )
 }
 
 function MantineParagraph({ settings }: FormComponentProps) {
-  return <Text style={{ whiteSpace: 'pre-line' }} c="dimmed">{(settings.content as string) ?? ''}</Text>
+  return (
+    <Text style={{ whiteSpace: 'pre-line' }} c="dimmed">
+      {(settings.content as string) ?? ''}
+    </Text>
+  )
 }
 
 function MantineTextInput({ settings, label }: FormComponentProps) {
   return (
-    <TextInput label={label} name={settings.name}
+    <TextInput
+      label={label}
+      name={settings.name}
       placeholder={(settings.placeholder as string) ?? ''}
-      required={settings.required} />
+      required={settings.required}
+    />
   )
 }
 
 function MantineTextArea({ settings, label }: FormComponentProps) {
   return (
-    <Textarea label={label} name={settings.name} minRows={4}
+    <Textarea
+      label={label}
+      name={settings.name}
+      minRows={4}
       placeholder={(settings.placeholder as string) ?? ''}
-      required={settings.required} />
+      required={settings.required}
+    />
   )
 }
 
 function MantineNumber({ settings, label }: FormComponentProps) {
   return (
-    <NumberInput label={label} name={settings.name}
+    <NumberInput
+      label={label}
+      name={settings.name}
       placeholder={(settings.placeholder as string) ?? ''}
-      required={settings.required} />
+      required={settings.required}
+    />
   )
 }
 
 function MantineSelect({ settings, label, options }: FormComponentProps) {
   return (
-    <Select label={label} name={settings.name} placeholder="Select..."
+    <Select
+      label={label}
+      name={settings.name}
+      placeholder="Select..."
       required={settings.required}
-      data={options?.map((opt) => ({ value: opt.value, label: opt.title })) ?? []} />
+      data={options?.map((opt) => ({ value: opt.value, label: opt.title })) ?? []}
+    />
   )
 }
 
 function MantineCheckbox({ settings, label }: FormComponentProps) {
-  return (
-    <Checkbox label={label} name={settings.name} required={settings.required} />
-  )
+  return <Checkbox label={label} name={settings.name} required={settings.required} />
 }
 
 function MantineRadio({ settings, label, options }: FormComponentProps) {
@@ -106,15 +160,20 @@ function MantineRadio({ settings, label, options }: FormComponentProps) {
 }
 
 function MantineDate({ settings, label }: FormComponentProps) {
-  return (
-    <TextInput label={label} name={settings.name} type="date"
-      required={settings.required} />
-  )
+  return <TextInput label={label} name={settings.name} type="date" required={settings.required} />
 }
 
 function MantineSwitch({ settings, label }: FormComponentProps) {
+  return <Switch label={label} name={settings.name} />
+}
+
+// --- Grid Container ---
+
+function MantineGridContainer({ children, settings }: FormComponentProps) {
   return (
-    <Switch label={label} name={settings.name} />
+    <SimpleGrid cols={(settings.columns as number) || 2} spacing="md">
+      {children}
+    </SimpleGrid>
   )
 }
 
@@ -130,7 +189,7 @@ function MantineSwitch({ settings, label }: FormComponentProps) {
 // items there, and they're stored in FormComponentRegistration.options.
 
 function ListSwitcher({ settings, options, value, onChangeValue }: FormComponentProps) {
-  const initialSelected: string[] = Array.isArray(value) ? value as string[] : []
+  const initialSelected: string[] = Array.isArray(value) ? (value as string[]) : []
   const [selected, setSelected] = useState<Set<string>>(new Set(initialSelected))
 
   const items = options ?? []
@@ -153,29 +212,51 @@ function ListSwitcher({ settings, options, value, onChangeValue }: FormComponent
 
   return (
     <Box mb="md">
-      <Text fw={500} fz="sm" mb="xs">{settings.label}</Text>
+      <Text fw={500} fz="sm" mb="xs">
+        {settings.label}
+      </Text>
       <Flex gap="md" align="flex-start">
         <Box style={{ flex: 1 }}>
-          <Text fz="xs" c="dimmed" mb="xs">Available</Text>
+          <Text fz="xs" c="dimmed" mb="xs">
+            Available
+          </Text>
           <Box style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {available.map((item) => (
-              <Badge key={item.id} variant="light" color="gray"
+              <Badge
+                key={item.id}
+                variant="light"
+                color="gray"
                 style={{ cursor: 'pointer' }}
                 onClick={() => moveToSelected(item.id)}
-                rightSection={<Text fz="xs" c="dimmed">+</Text>}>
+                rightSection={
+                  <Text fz="xs" c="dimmed">
+                    +
+                  </Text>
+                }
+              >
                 {item.title}
               </Badge>
             ))}
           </Box>
         </Box>
         <Box style={{ flex: 1 }}>
-          <Text fz="xs" c="dimmed" mb="xs">Selected</Text>
+          <Text fz="xs" c="dimmed" mb="xs">
+            Selected
+          </Text>
           <Box style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {selectedItems.map((item) => (
-              <Badge key={item.id} variant="light" color="blue"
+              <Badge
+                key={item.id}
+                variant="light"
+                color="blue"
                 style={{ cursor: 'pointer' }}
                 onClick={() => moveToAvailable(item.id)}
-                rightSection={<Text fz="xs" c="dimmed">x</Text>}>
+                rightSection={
+                  <Text fz="xs" c="dimmed">
+                    x
+                  </Text>
+                }
+              >
                 {item.title}
               </Badge>
             ))}
@@ -197,7 +278,12 @@ function ListSwitcherEditor({ settings, options, onValueChange, onChangeOptions 
   return (
     <FormComponentEditorContainer>
       <EditorInput settings={settings} name="label" label="Label" handleOnChange={handleOnChange} />
-      <EditorInput settings={settings} name="name" label="Field name" handleOnChange={handleOnChange} />
+      <EditorInput
+        settings={settings}
+        name="name"
+        label="Field name"
+        handleOnChange={handleOnChange}
+      />
       <EditorOptions
         options={options}
         name="options"
@@ -211,71 +297,116 @@ function ListSwitcherEditor({ settings, options, onValueChange, onChangeOptions 
 
 export const formComponents: FormComponentRegistration[] = [
   {
-    key: 'Header', icon: FaHeading,
+    key: 'Header',
+    icon: FaHeading,
     settings: { label: 'Header', name: 'Header' },
     component: MantineHeader,
     editor: { label: 'EditorInput' },
     providesValue: false,
   },
   {
-    key: 'Paragraph', icon: FaParagraph,
+    key: 'Paragraph',
+    icon: FaParagraph,
     settings: { label: 'Paragraph', content: 'Example text', name: 'Paragraph' },
     component: MantineParagraph,
     editor: { content: 'EditorTextArea' },
     providesValue: false,
   },
   {
-    key: 'TextInput', icon: FaFont,
+    key: 'TextInput',
+    icon: FaFont,
     settings: { label: 'Text input', name: 'TextInput' },
     component: MantineTextInput,
-    editor: { label: 'EditorInput', placeholder: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox' },
+    editor: {
+      label: 'EditorInput',
+      placeholder: 'EditorInput',
+      name: 'EditorInput',
+      required: 'EditorCheckbox',
+    },
   },
   {
-    key: 'TextArea', icon: FaAlignLeft,
+    key: 'TextArea',
+    icon: FaAlignLeft,
     settings: { label: 'Text area', name: 'TextArea' },
     component: MantineTextArea,
-    editor: { label: 'EditorInput', placeholder: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox' },
+    editor: {
+      label: 'EditorInput',
+      placeholder: 'EditorInput',
+      name: 'EditorInput',
+      required: 'EditorCheckbox',
+    },
   },
   {
-    key: 'NumberInput', icon: FaHashtag,
+    key: 'NumberInput',
+    icon: FaHashtag,
     settings: { label: 'Number', name: 'NumberInput' },
     component: MantineNumber,
-    editor: { label: 'EditorInput', placeholder: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox' },
+    editor: {
+      label: 'EditorInput',
+      placeholder: 'EditorInput',
+      name: 'EditorInput',
+      required: 'EditorCheckbox',
+    },
   },
   {
-    key: 'SelectInput', icon: FaList,
+    key: 'SelectInput',
+    icon: FaList,
     options: [],
     settings: { label: 'Select', name: 'Select' },
     component: MantineSelect,
-    editor: { label: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox', options: 'EditorOptions' },
+    editor: {
+      label: 'EditorInput',
+      name: 'EditorInput',
+      required: 'EditorCheckbox',
+      options: 'EditorOptions',
+    },
   },
   {
-    key: 'RadioGroup', icon: FaDotCircle,
+    key: 'RadioGroup',
+    icon: FaDotCircle,
     options: [],
     settings: { label: 'Radio group', name: 'RadioGroup' },
     component: MantineRadio,
-    editor: { label: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox', options: 'EditorOptions' },
+    editor: {
+      label: 'EditorInput',
+      name: 'EditorInput',
+      required: 'EditorCheckbox',
+      options: 'EditorOptions',
+    },
   },
   {
-    key: 'Checkbox', icon: FaCheckSquare,
+    key: 'Checkbox',
+    icon: FaCheckSquare,
     settings: { label: 'Checkbox', name: 'Checkbox' },
     component: MantineCheckbox,
     editor: { label: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox' },
   },
   {
-    key: 'DatePicker', icon: FaCalendar,
+    key: 'DatePicker',
+    icon: FaCalendar,
     settings: { label: 'Date', name: 'DatePicker' },
     component: MantineDate,
     editor: { label: 'EditorInput', name: 'EditorInput', required: 'EditorCheckbox' },
   },
   {
-    key: 'Switch', icon: FaToggleOn,
+    key: 'Switch',
+    icon: FaToggleOn,
     settings: { label: 'Toggle', name: 'Switch' },
     component: MantineSwitch,
     editor: { label: 'EditorInput', name: 'EditorInput' },
   },
   {
-    key: 'ListSwitcher', icon: FaExchangeAlt,
+    key: 'Container',
+    icon: FaTh,
+    isContainer: true,
+    settings: { label: 'Container', name: 'container', columns: 2 },
+    component: MantineGridContainer,
+    editor: { label: 'EditorInput', name: 'EditorInput', columns: 'EditorInput' },
+    providesValue: false,
+  },
+  {
+    key: 'ListSwitcher',
+    icon: FaExchangeAlt,
     options: [
       { id: '1', title: 'Dashboard', value: 'dashboard' },
       { id: '2', title: 'Settings', value: 'settings' },
@@ -287,4 +418,3 @@ export const formComponents: FormComponentRegistration[] = [
     editor: ListSwitcherEditor,
   },
 ]
-

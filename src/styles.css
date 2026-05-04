@@ -89,6 +89,64 @@
   font-style: italic;
 }
 
+/* === Container (Grid/Row) Component === */
+.form-container-container {
+  position: relative;
+  border: 1px dashed var(--fj-color-border);
+  border-radius: var(--fj-radius-md);
+  background: rgba(245, 245, 247, 0.5);
+  padding: 0.5rem;
+  min-height: 3rem;
+}
+
+/* Drag handle bar — only this small area initiates container reorder.
+   Kept separate from the inner Droppable so drops into the container are detected. */
+.form-container-container-handle {
+  cursor: grab;
+  padding: 0.25rem 0.25rem 0.25rem 0;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--fj-color-border);
+}
+
+.form-container-container-handle:active {
+  cursor: grabbing;
+}
+
+.form-container-container-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--fj-color-text-muted);
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.form-container-container-dropzone {
+  min-height: 2rem;
+  border-radius: var(--fj-radius-sm);
+  transition: background var(--fj-transition);
+}
+
+.form-container-container-empty {
+  display: block;
+  text-align: center;
+  color: var(--fj-color-text-muted);
+  font-size: 0.78rem;
+  padding: 1.5rem 1rem;
+  opacity: 0.5;
+  font-style: italic;
+  pointer-events: none;
+}
+
+.form-container-container-display {
+  width: 100%;
+}
+
+.form-container-container-display-grid {
+  width: 100%;
+}
+
 /* =============================================
    SIDEBAR
    ============================================= */
@@ -147,7 +205,7 @@
 }
 
 /* --- Toolbox component list area --- */
-.toolbox-container > div[data-rbd-droppable-id] {
+.toolbox-list {
   padding: 0 0.9rem;
   display: flex;
   flex-direction: column;
@@ -840,16 +898,6 @@
 .form-display-submit:focus-visible {
   outline: 2px solid var(--fj-color-primary);
   outline-offset: 2px;
-}
-
-/* === Drag-and-Drop States === */
-/* The doubled class selectors (e.g., .form-container.form-container) increase
-   specificity to override inline styles injected by the third-party DnD library
-   (@hello-pangea/dnd), which cannot be overridden at normal specificity. */
-.form-container.form-container > div[style*="position: absolute"] {
-  border-radius: var(--fj-radius-md);
-  background: rgba(91, 110, 255, 0.05);
-  border: 2px dashed var(--fj-color-drop-indicator);
 }
 
 .toolbox-item.toolbox-item[style*="transform"] {

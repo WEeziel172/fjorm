@@ -1,7 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { deserializeFormItems } from '../../utils/useFormItems'
 import type { Config } from '../../utils/config'
 import type { FormItem, SerializedFormItem, FormConfig } from '../../types'
+
+function flattenTree(items: FormItem[]): FormItem[] {
+  return items.flatMap((item) => [
+    item,
+    ...(item.children ? flattenTree(item.children) : []),
+  ])
+}
+
+function flattenData(items: SerializedFormItem[]): SerializedFormItem[] {
+  return items.flatMap((item) => [
+    item,
+    ...(item.children ? flattenData(item.children) : []),
+  ])
+}
 
 function FormDisplayBody({
   data,
@@ -15,6 +29,7 @@ function FormDisplayBody({
   onSubmit?: (data: Record<string, unknown>) => void
 }) {
   const formItems = useMemo(() => deserializeFormItems(data, config), [data, config])
+  const flatItems = useMemo(() => flattenTree(formItems), [formItems])
 
   const [values, setValues] = useState<Record<string, unknown>>({})
   const valuesRef = useRef(values)
@@ -29,13 +44,16 @@ function FormDisplayBody({
 
   // Pre-compute stable onChange callbacks per field name
   const nonValueNames = useMemo(
-    () => new Set(formItems.filter(item => item.providesValue === false).map(item => item.settings.name)),
-    [formItems],
+    () =>
+      new Set(
+        flatItems.filter((item) => item.providesValue === false).map((item) => item.settings.name),
+      ),
+    [flatItems],
   )
 
   const onChangeCallbacks = useMemo(() => {
     const callbacks: Record<string, (value: unknown) => void> = {}
-    for (const item of formItems) {
+    for (const item of flatItems) {
       if (item.providesValue === false) continue
       const name = item.settings.name
       if (!callbacks[name]) {
@@ -47,45 +65,55 @@ function FormDisplayBody({
       } else {
         console.warn(
           `Duplicate field name detected: "${name}". ` +
-          'Only the first field with this name will produce values. ' +
-          'Ensure all field names are unique.',
+            'Only the first field with this name will produce values. ' +
+            'Ensure all field names are unique.',
         )
       }
     }
     return callbacks
-  }, [formItems])
+  }, [flatItems])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const formEl = e.target as HTMLFormElement
     const formData = new FormData(formEl)
     const dataObj: Record<string, unknown> = {}
+    const flatData = flattenData(data)
 
-    for (const item of data) {
+    for (const item of flatData) {
       const name = item.settings.name
       if (nonValueNames.has(name)) continue
       const tracked = valuesRef.current[name]
-      dataObj[name] = (name in valuesRef.current && tracked !== null)
-        ? tracked
-        : formData.has(name)
-          ? formData.get(name)
-          : false
+      dataObj[name] =
+        name in valuesRef.current && tracked !== null
+          ? tracked
+          : formData.has(name)
+            ? formData.get(name)
+            : false
     }
 
     onSubmit?.(dataObj)
   }
 
-  const renderComponent = ({ component: Component, settings, id, options, value }: FormItem) => (
-    <Component
-      options={options}
-      label={settings.label}
-      key={id}
-      settings={settings}
-      id={id}
-      value={value}
-      onChangeValue={onChangeCallbacks[settings.name]}
-    />
-  )
+  function renderTree(items: FormItem[]): ReactNode[] {
+    return items.map((item) => {
+      const childNodes = item.children ? renderTree(item.children) : undefined
+      const { component: Component, settings, id, options, value } = item
+      return (
+        <Component
+          key={id}
+          id={id}
+          label={settings.label}
+          settings={settings}
+          options={options}
+          value={value}
+          onChangeValue={onChangeCallbacks[settings.name]}
+        >
+          {childNodes}
+        </Component>
+      )
+    })
+  }
 
   if (form && form.component) {
     const { component: Form, actions } = form
@@ -93,7 +121,7 @@ function FormDisplayBody({
     return (
       <div className="form-display-container">
         <Form onSubmit={onSubmit} fjormValues={values}>
-          {formItems.length > 0 && formItems.map(renderComponent)}
+          {formItems.length > 0 && renderTree(formItems)}
           {actions}
         </Form>
       </div>
@@ -102,8 +130,10 @@ function FormDisplayBody({
 
   return (
     <form id="form" onSubmit={handleSubmit} className="form-display-container">
-      {formItems.length > 0 && formItems.map(renderComponent)}
-      <button type="submit" className="form-display-submit">Save</button>
+      {formItems.length > 0 && renderTree(formItems)}
+      <button type="submit" className="form-display-submit">
+        Save
+      </button>
     </form>
   )
 }
