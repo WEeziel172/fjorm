@@ -42,7 +42,7 @@ jobs:
 
   release:
     needs: [typecheck, test, build]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next'
     runs-on: ubuntu-latest
     permissions:
       contents: write
