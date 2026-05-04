@@ -2,7 +2,7 @@ name: PR Preview Cleanup
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, next]
     types: [closed]
 
 concurrency:
