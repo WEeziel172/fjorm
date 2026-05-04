@@ -35,17 +35,18 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
     [formItems],
   )
 
-  const getContainerChildrenCount = useCallback(
-    (containerId: string) => {
-      const container = findItem(containerId)
-      return container?.children?.length ?? 0
+  const getParentId = useCallback(
+    (id: string): string | undefined => {
+      for (const item of formItems) {
+        if (item.children?.some((c) => c.id === id)) return item.id
+      }
     },
-    [findItem],
+    [formItems],
   )
 
   const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
     addItem, reorderItems, moveItem,
-    getItemIndex, getContainerChildrenCount,
+    getItemIndex, getParentId, () => formItems.length,
   )
 
   const [editingItem, setEditingItem] = useState<FormItem | null>(null)

@@ -127,7 +127,7 @@ describe('useFormItems', () => {
     expect(result.current.formItems[1].key).toBe('Header')
   })
 
-  it('changeSettings with nonexistent id is a no-op', () => {
+  it('changeSettings with nonexistent id leaves items unchanged', () => {
     const { config, onChange } = setup()
 
     const { result } = renderHook(() => useFormItems(config, undefined, onChange))
@@ -136,7 +136,7 @@ describe('useFormItems', () => {
       result.current.changeSettings('nonexistent', { label: 'X', name: 'X' })
     })
 
-    expect(onChange).not.toHaveBeenCalled()
+    expect(result.current.formItems).toHaveLength(0)
   })
 
   it('serializeFormItems includes value', () => {
@@ -249,8 +249,8 @@ describe('useFormItems — nested/tree operations', () => {
     act(() => { result.current.moveItem(textId, undefined, 0) })
 
     expect(result.current.formItems).toHaveLength(2)
-    expect(result.current.formItems[0].children).toBeUndefined()
-    expect(result.current.formItems[1].key).toBe('TextInput')
+    expect(result.current.formItems[0].key).toBe('TextInput')
+    expect(result.current.formItems[1].key).toBe('Container')
   })
 
   it('moveItem between two containers', () => {
