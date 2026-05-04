@@ -73,7 +73,7 @@ describe('useFormBuilderDragDrop', () => {
         ))
       })
 
-      expect(addItem).toHaveBeenCalledWith('TextInput', 0, undefined)
+      expect(addItem).toHaveBeenCalledWith('TextInput', 0)
     })
 
     it('adds item to container when dropping from toolbox into container', () => {
@@ -106,7 +106,7 @@ describe('useFormBuilderDragDrop', () => {
         ))
       })
 
-      expect(reorderItems).toHaveBeenCalledWith(0, 2)
+      expect(reorderItems).toHaveBeenCalledWith(0, 2, undefined)
     })
 
     it('no-ops when over is null', () => {
