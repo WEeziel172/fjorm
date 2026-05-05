@@ -155,10 +155,11 @@ describe('useFormBuilderDragDrop', () => {
       expect(result.current.dragInsertIndex).toBeNull()
     })
 
-    it('ignores non-toolbox drags', () => {
+    it('skips indicator for same-parent canvas-item reorder', () => {
+      const getParentId = vi.fn(() => undefined)
       const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 1 : -1))
       const { result } = renderHook(() =>
-        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, noop, zero),
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, getParentId, zero),
       )
 
       act(() => {
@@ -169,6 +170,26 @@ describe('useFormBuilderDragDrop', () => {
       })
 
       expect(result.current.dragInsertIndex).toBeNull()
+    })
+
+    it('sets insertion index for cross-parent canvas-item drag', () => {
+      const getParentId = vi.fn((id: string) => (id === 'item1' ? 'container-a' : undefined))
+      const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 0 : -1))
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, getParentId, zero),
+      )
+
+      // pointerY=30, centerY=25 → below center → insert after → idx=1
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'item1', kind: 'canvas-item' },
+          { id: 'item2', kind: 'canvas-item' },
+          30,
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(1)
+      expect(result.current.dragOverParentId).toBeUndefined()
     })
   })
 
@@ -305,6 +326,37 @@ describe('useFormBuilderDragDrop', () => {
       })
 
       expect(addItem).not.toHaveBeenCalled()
+    })
+
+    it('moves canvas item cross-parent with Y-based positioning', () => {
+      const moveItem = vi.fn()
+      const getParentId = vi.fn((id: string) =>
+        id === 'child1' ? 'container-a' : undefined,
+      )
+      const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 1 : -1))
+      const getRootItemCount = vi.fn(() => 3)
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(
+          vi.fn(),
+          vi.fn(),
+          moveItem,
+          getItemIndex,
+          getParentId,
+          getRootItemCount,
+        ),
+      )
+
+      // Drag child1 (inside container-a) over item2 (root, pointerY=0 → above center)
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'child1', kind: 'canvas-item' },
+          { id: 'item2', kind: 'canvas-item' },
+          0,
+        ))
+      })
+
+      // Index 1 = before item2 (pointer above center)
+      expect(moveItem).toHaveBeenCalledWith('child1', undefined, 1)
     })
 
     it('moves item from canvas to container', () => {

@@ -6,6 +6,7 @@ function computeInsertIndex(
   event: DragOverEvent,
   getItemIndex: (id: string, parentId?: string) => number,
   getRootItemCount: () => number,
+  getParentId?: (id: string) => string | undefined,
 ): { idx: number; parentId: string | undefined } | null {
   const { over } = event
   if (!over) return null
@@ -14,14 +15,15 @@ function computeInsertIndex(
   if (!to) return null
 
   if (to.kind === 'canvas-item') {
-    const idx = getItemIndex(String(over.id))
+    const overParentId = getParentId ? getParentId(String(over.id)) : undefined
+    const idx = getItemIndex(String(over.id), overParentId)
     const baseIdx = idx >= 0 ? idx : 0
 
     const activatorY = (event.activatorEvent as MouseEvent).clientY ?? 0
     const pointerY = activatorY + event.delta.y
     const centerY = over.rect.top + over.rect.height / 2
 
-    return { idx: pointerY > centerY ? baseIdx + 1 : baseIdx, parentId: undefined }
+    return { idx: pointerY > centerY ? baseIdx + 1 : baseIdx, parentId: overParentId }
   }
 
   if (to.kind === 'container-dropzone') {
@@ -56,9 +58,7 @@ export function useFormBuilderDragDrop(
     (event: DragOverEvent) => {
       const { active } = event
       const from = active.data.current as DndItemData | undefined
-      if (from?.kind !== 'toolbox-item') return
-
-      const result = computeInsertIndex(event, getItemIndex, getRootItemCount)
+      const result = computeInsertIndex(event, getItemIndex, getRootItemCount, getParentId)
 
       if (!result) {
         if (lastDragOverRef.current.idx !== null) {
@@ -69,6 +69,20 @@ export function useFormBuilderDragDrop(
         return
       }
 
+      // For canvas-item drags: skip the custom indicator on same-parent reorder
+      // — dnd-kit's sortable preset handles the visual reorder animation.
+      if (from?.kind === 'canvas-item') {
+        const activeParent = getParentId(String(active.id))
+        if (result.parentId === activeParent) {
+          if (lastDragOverRef.current.idx !== null) {
+            lastDragOverRef.current = { idx: null, parentId: undefined }
+            setDragInsertIndex(null)
+            setDragOverParentId(undefined)
+          }
+          return
+        }
+      }
+
       const prev = lastDragOverRef.current
       if (prev.idx === result.idx && prev.parentId === result.parentId) return
 
@@ -76,7 +90,7 @@ export function useFormBuilderDragDrop(
       setDragInsertIndex(result.idx)
       setDragOverParentId(result.parentId)
     },
-    [getItemIndex, getRootItemCount],
+    [getItemIndex, getRootItemCount, getParentId],
   )
 
   const onDragEnd = useCallback(
@@ -129,7 +143,13 @@ export function useFormBuilderDragDrop(
               reorderItems(fromIdx, toIdx, fromParent)
             }
           } else {
-            moveItem(activeIdStr, toParent, getItemIndex(overIdStr, toParent))
+            const pos = computeInsertIndex(
+              event as unknown as DragOverEvent,
+              getItemIndex,
+              getRootItemCount,
+              getParentId,
+            )
+            moveItem(activeIdStr, toParent, pos?.idx ?? 0)
           }
           return
         }
@@ -140,8 +160,8 @@ export function useFormBuilderDragDrop(
           return
         }
 
-        // Dropped onto the root canvas
-        moveItem(activeIdStr, undefined, getRootItemCount())
+        // Dropped onto the root canvas — use stored indicator position if available
+        moveItem(activeIdStr, undefined, dragInsertIndex ?? getRootItemCount())
         return
       }
     },
