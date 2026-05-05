@@ -96,14 +96,15 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
     [],
   )
 
-  const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
-    addItem,
-    reorderItems,
-    moveItem,
-    getItemIndex,
-    getParentId,
-    getRootItemCount,
-  )
+  const { activeId, dragInsertIndex, onDragStart, onDragOver, onDragEnd } =
+    useFormBuilderDragDrop(
+      addItem,
+      reorderItems,
+      moveItem,
+      getItemIndex,
+      getParentId,
+      getRootItemCount,
+    )
 
   const toolboxKeys = useMemo(
     () => new Set(config.components.map((c) => c.key)),
@@ -189,6 +190,7 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
         sensors={sensors}
         collisionDetection={customCollisionDetection}
         onDragStart={onDragStart}
+        onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
         {previewForm && (
@@ -204,6 +206,8 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
             formItems={formItems}
             onEditFormItem={onEditFormItem}
             onDeleteFormItem={onDeleteFormItem}
+            activeToolboxDragKey={activeComponentKey}
+            dropInsertIndex={dragInsertIndex}
           />
         )}
 

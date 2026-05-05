@@ -5,21 +5,59 @@ import { RecursiveItem } from './FormComponentContainer'
 import type { FormItem } from '../../types'
 
 const CANVAS_DROPPABLE_ID = 'fjorm-canvas'
+const PLACEHOLDER_ID = '__fjorm-drag-placeholder__'
+
+interface PlaceholderItem {
+  id: string
+  _isPlaceholder: true
+}
+
+function isPlaceholder(item: FormItem | PlaceholderItem): item is PlaceholderItem {
+  return '_isPlaceholder' in item
+}
+
+function DropIndicator() {
+  return (
+    <div
+      style={{
+        height: '3px',
+        background: 'var(--fj-color-primary, #5B6EFF)',
+        borderRadius: '2px',
+        margin: '2px 0',
+        boxShadow: '0 0 4px rgba(91, 110, 255, 0.4)',
+      }}
+    />
+  )
+}
 
 export function FormContainer({
   formItems,
   onDeleteFormItem,
   onEditFormItem,
+  activeToolboxDragKey,
+  dropInsertIndex,
 }: {
   formItems: FormItem[]
   onDeleteFormItem: (payload: { id: string }) => void
   onEditFormItem: (payload: { id: string }) => void
+  activeToolboxDragKey?: string | null
+  dropInsertIndex?: number | null
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: CANVAS_DROPPABLE_ID,
     data: { kind: 'canvas-root' },
   })
 
+  const displayItems = useMemo(() => {
+    if (!activeToolboxDragKey || dropInsertIndex == null) return formItems
+
+    const placeholder: PlaceholderItem = { _isPlaceholder: true, id: PLACEHOLDER_ID }
+    const result: (FormItem | PlaceholderItem)[] = [...formItems]
+    result.splice(dropInsertIndex, 0, placeholder)
+    return result
+  }, [formItems, activeToolboxDragKey, dropInsertIndex])
+
+  // SortableContext only includes real form item IDs — the placeholder is a pure visual
   const itemIds = useMemo(() => formItems.map((item) => item.id), [formItems])
 
   return (
@@ -39,21 +77,24 @@ export function FormContainer({
             outline: isOver ? '2px dashed var(--fj-color-drop-indicator)' : undefined,
           }}
         >
-          {formItems.length === 0 && (
+          {displayItems.length === 0 && (
             <div className="form-container-empty" aria-live="polite">
               Drag components here to build your form
             </div>
           )}
-          {formItems.length > 0 &&
-            formItems.map((item, index) => (
-              <RecursiveItem
-                key={item.id}
-                item={item}
-                index={index}
-                onEditFormItem={onEditFormItem}
-                onDeleteFormItem={onDeleteFormItem}
-              />
-            ))}
+          {displayItems.length > 0 &&
+            displayItems.map((item, index) => {
+              if (isPlaceholder(item)) return <DropIndicator key={PLACEHOLDER_ID} />
+              return (
+                <RecursiveItem
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  onEditFormItem={onEditFormItem}
+                  onDeleteFormItem={onDeleteFormItem}
+                />
+              )
+            })}
         </div>
       </SortableContext>
     </div>

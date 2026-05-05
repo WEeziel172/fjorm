@@ -96,7 +96,7 @@ export interface EditorChangePayload {
 
 /** Data attached to draggable/droppable elements via dnd-kit's `data` prop. */
 export interface DndItemData {
-  kind: 'toolbox-item' | 'canvas-item' | 'container-dropzone' | 'canvas-root'
+  kind: 'toolbox-item' | 'canvas-item' | 'container-dropzone' | 'canvas-root' | 'drop-indicator'
   componentKey?: string
   containerId?: string
 }
