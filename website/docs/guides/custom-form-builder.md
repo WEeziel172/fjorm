@@ -25,6 +25,7 @@ import {
   FormDisplay,
   type FormItem,
   type SerializedFormItem,
+  type FormConfig,
 } from 'fjorm'
 import 'fjorm/dist/index.css'
 
@@ -33,11 +34,13 @@ export function ThreeColumnBuilder({
   initialData,
   onChange,
   onSubmit,
+  form,
 }: {
   config: Config
   initialData?: SerializedFormItem[]
   onChange?: (data: SerializedFormItem[]) => void
   onSubmit?: (data: Record<string, unknown>) => void
+  form?: FormConfig
 }) {
   // --- State ---
   const [currentEditor, setCurrentEditor] = useState<FormItem | null>(null)
@@ -115,8 +118,8 @@ export function ThreeColumnBuilder({
           <div style={{ width: 300, flexShrink: 0 }}>
             <EditorToolBox currentEditor={currentEditor}
               onClose={() => setCurrentEditor(null)}
-              onChangeFormItemSettings={changeSettings}
-              onChangeFormItemOptions={changeOptions} />
+              onChangeFormItemSettings={({ id, settings }) => changeSettings(id, settings)}
+              onChangeFormItemOptions={({ id, options }) => changeOptions(id, options)} />
           </div>
         )}
       </div>
@@ -150,14 +153,18 @@ const {
   deleteItem,
   changeSettings,
   reorderItems,
+  moveItem,
 } = useFormItems(config, initialData, onChange)
 
-const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
+const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+  addItem, reorderItems, moveItem,
+  getItemIndex, getParentId, () => formItems.length,
+)
 
 // Render formItems with your own UI library
 // Wire addItem to a custom palette
 // Wire deleteItem to your own delete buttons
-// Wire reorderItems to your own drag-and-drop backend
+// Wire onDragStart/onDragEnd to DndContext
 ```
 
 The hooks are the state layer — the layout components are just one way to render them.
