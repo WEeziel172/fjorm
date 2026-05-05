@@ -1,20 +1,50 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useFormBuilderDragDrop } from '../../../src/utils/useDragDrop'
-import type { DragEndEvent } from '@dnd-kit/core'
+import type { DragEndEvent, DragOverEvent } from '@dnd-kit/core'
 
-function makeEvent(active: { id: string; kind: string; componentKey?: string }, over: { id: string; kind: string; containerId?: string } | null): DragEndEvent {
+const DEFAULT_RECT = { top: 0, left: 0, right: 100, bottom: 50, width: 100, height: 50 }
+
+function makeEvent(
+  active: { id: string; kind: string; componentKey?: string },
+  over: { id: string; kind: string; containerId?: string } | null,
+  pointerY = 0,
+): DragEndEvent {
   return {
-    active: { id: active.id, data: { current: { kind: active.kind, componentKey: active.componentKey } } },
-    over: over ? { id: over.id, data: { current: { kind: over.kind, containerId: over.containerId } } } : null,
+    active: {
+      id: active.id,
+      data: { current: { kind: active.kind, componentKey: active.componentKey } },
+    },
+    over: over
+      ? { id: over.id, rect: DEFAULT_RECT, disabled: false, data: { current: { kind: over.kind, containerId: over.containerId } } }
+      : null,
     collisions: [],
-    delta: { x: 0, y: 0 },
-    activatorEvent: new Event('pointerup') as unknown as PointerEvent,
+    delta: { x: 0, y: pointerY },
+    activatorEvent: new MouseEvent('pointerup', { clientY: 0 }),
   } as unknown as DragEndEvent
 }
 
 function makeStartEvent(id: string): { active: { id: string } } {
   return { active: { id } } as unknown as { active: { id: string } }
+}
+
+function makeDragOverEvent(
+  active: { id: string; kind: string; componentKey?: string },
+  over: { id: string; kind: string; containerId?: string } | null,
+  pointerY = 0,
+): DragOverEvent {
+  return {
+    active: {
+      id: active.id,
+      data: { current: { kind: active.kind, componentKey: active.componentKey } },
+    },
+    over: over
+      ? { id: over.id, rect: DEFAULT_RECT, disabled: false, data: { current: { kind: over.kind, containerId: over.containerId } } }
+      : null,
+    collisions: [],
+    delta: { x: 0, y: pointerY },
+    activatorEvent: new MouseEvent('pointermove', { clientY: 0 }),
+  } as unknown as DragOverEvent
 }
 
 describe('useFormBuilderDragDrop', () => {
@@ -27,6 +57,7 @@ describe('useFormBuilderDragDrop', () => {
       useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, zero),
     )
     expect(result.current.activeId).toBeNull()
+    expect(result.current.dragInsertIndex).toBeNull()
   })
 
   it('onDragStart sets activeId', () => {
@@ -40,8 +71,109 @@ describe('useFormBuilderDragDrop', () => {
     expect(result.current.activeId).toBe('test-id')
   })
 
+  describe('onDragOver', () => {
+    it('inserts before item when pointer above center', () => {
+      const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 1 : -1))
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, noop, zero),
+      )
+
+      // pointerY=0, centerY=25 → pointer above center → insert before
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'item2', kind: 'canvas-item' },
+          0,
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(1)
+    })
+
+    it('inserts after item when pointer below center', () => {
+      const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 1 : -1))
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, noop, zero),
+      )
+
+      // pointerY=30, centerY=25 → pointer below center → insert after
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'item2', kind: 'canvas-item' },
+          30,
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(2)
+    })
+
+    it('sets insertion index to 0 for container dropzone', () => {
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, zero),
+      )
+
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'container-abc', kind: 'container-dropzone', containerId: 'abc' },
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(0)
+      expect(result.current.dragOverParentId).toBe('abc')
+    })
+
+    it('appends at end when over canvas-root', () => {
+      const getRootItemCount = vi.fn(() => 3)
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, getRootItemCount),
+      )
+
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'fjorm-canvas', kind: 'canvas-root' },
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(3)
+    })
+
+    it('clears insertion index when over is null', () => {
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), negOne, noop, zero),
+      )
+
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          null,
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBeNull()
+    })
+
+    it('ignores non-toolbox drags', () => {
+      const getItemIndex = vi.fn((id: string) => (id === 'item2' ? 1 : -1))
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(vi.fn(), vi.fn(), vi.fn(), getItemIndex, noop, zero),
+      )
+
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'item1', kind: 'canvas-item' },
+          { id: 'item2', kind: 'canvas-item' },
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBeNull()
+    })
+  })
+
   describe('onDragEnd', () => {
-    it('clears activeId on drag end', () => {
+    it('clears activeId and dragInsertIndex on drag end', () => {
       const addItem = vi.fn()
       const { result } = renderHook(() =>
         useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), negOne, noop, zero),
@@ -56,9 +188,10 @@ describe('useFormBuilderDragDrop', () => {
         ))
       })
       expect(result.current.activeId).toBeNull()
+      expect(result.current.dragInsertIndex).toBeNull()
     })
 
-    it('adds item when dragging from toolbox to canvas', () => {
+    it('adds item when dragging from toolbox to canvas (pointer above center)', () => {
       const addItem = vi.fn()
       const reorderItems = vi.fn()
       const moveItem = vi.fn()
@@ -66,14 +199,35 @@ describe('useFormBuilderDragDrop', () => {
         useFormBuilderDragDrop(addItem, reorderItems, moveItem, () => 0, noop, zero),
       )
 
+      // pointerY=0, centerY=25 → above center → insert before → idx=0
       act(() => {
         result.current.onDragEnd(makeEvent(
           { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
           { id: 'item1', kind: 'canvas-item' },
+          0,
         ))
       })
 
-      expect(addItem).toHaveBeenCalledWith('TextInput', 0)
+      expect(addItem).toHaveBeenCalledWith('TextInput', 0, undefined)
+    })
+
+    it('adds item after last item when pointer below center', () => {
+      const addItem = vi.fn()
+      const getItemIndex = vi.fn(() => 2)
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), getItemIndex, noop, zero),
+      )
+
+      // pointerY=30, centerY=25 → below center → insert after → idx=2+1=3
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'item3', kind: 'canvas-item' },
+          30,
+        ))
+      })
+
+      expect(addItem).toHaveBeenCalledWith('TextInput', 3, undefined)
     })
 
     it('adds item to container when dropping from toolbox into container', () => {
@@ -90,6 +244,34 @@ describe('useFormBuilderDragDrop', () => {
       })
 
       expect(addItem).toHaveBeenCalledWith('TextInput', 0, 'abc')
+    })
+
+    it('handles drop-indicator kind by using tracked dragInsertIndex', () => {
+      const addItem = vi.fn()
+      const getItemIndex = vi.fn(() => 2)
+      const { result } = renderHook(() =>
+        useFormBuilderDragDrop(addItem, vi.fn(), vi.fn(), getItemIndex, noop, zero),
+      )
+
+      // pointerY=0, centerY=25 → above center → insert before → idx=2
+      act(() => {
+        result.current.onDragOver(makeDragOverEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: 'item3', kind: 'canvas-item' },
+          0,
+        ))
+      })
+
+      expect(result.current.dragInsertIndex).toBe(2)
+
+      act(() => {
+        result.current.onDragEnd(makeEvent(
+          { id: 'TextInput', kind: 'toolbox-item', componentKey: 'TextInput' },
+          { id: '__fjorm-drag-placeholder__', kind: 'drop-indicator' },
+        ))
+      })
+
+      expect(addItem).toHaveBeenCalledWith('TextInput', 2)
     })
 
     it('reorders when dragging canvas item over another canvas item', () => {
