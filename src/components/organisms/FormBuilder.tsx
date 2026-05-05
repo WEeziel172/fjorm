@@ -207,6 +207,7 @@ const FormBuilder = forwardRef<FormBuilderHandle, FormBuilderProps>(function For
             onEditFormItem={onEditFormItem}
             onDeleteFormItem={onDeleteFormItem}
             activeToolboxDragKey={activeComponentKey}
+            activeDragId={activeId}
             dropInsertIndex={dragInsertIndex}
           />
         )}

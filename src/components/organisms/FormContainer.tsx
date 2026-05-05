@@ -35,12 +35,14 @@ export function FormContainer({
   onDeleteFormItem,
   onEditFormItem,
   activeToolboxDragKey,
+  activeDragId,
   dropInsertIndex,
 }: {
   formItems: FormItem[]
   onDeleteFormItem: (payload: { id: string }) => void
   onEditFormItem: (payload: { id: string }) => void
   activeToolboxDragKey?: string | null
+  activeDragId?: string | null
   dropInsertIndex?: number | null
 }) {
   const { setNodeRef, isOver } = useDroppable({
@@ -49,13 +51,14 @@ export function FormContainer({
   })
 
   const displayItems = useMemo(() => {
-    if (!activeToolboxDragKey || dropInsertIndex == null) return formItems
+    const isDragging = activeDragId ?? activeToolboxDragKey
+    if (!isDragging || dropInsertIndex == null) return formItems
 
     const placeholder: PlaceholderItem = { _isPlaceholder: true, id: PLACEHOLDER_ID }
     const result: (FormItem | PlaceholderItem)[] = [...formItems]
     result.splice(dropInsertIndex, 0, placeholder)
     return result
-  }, [formItems, activeToolboxDragKey, dropInsertIndex])
+  }, [formItems, activeDragId, activeToolboxDragKey, dropInsertIndex])
 
   // SortableContext only includes real form item IDs — the placeholder is a pure visual
   const itemIds = useMemo(() => formItems.map((item) => item.id), [formItems])
