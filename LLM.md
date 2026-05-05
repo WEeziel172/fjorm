@@ -13,7 +13,7 @@ fjorm uses an **adapter/registry pattern**. You define form field types as `Form
 
 The library manages drag-and-drop, state, and serialization. You supply the components.
 
-## Quick Start (4 built-in types)
+## Quick Start (5 built-in types)
 
 ```tsx
 import { Config, FormBuilder, formComponents } from 'fjorm'
@@ -21,7 +21,7 @@ import 'fjorm/dist/index.css'
 
 export default function App() {
   const config = new Config()
-  config.addComponents(formComponents) // Header, Paragraph, TextInput, SelectInput
+  config.addComponents(formComponents) // Header, Paragraph, TextInput, SelectInput, Container
 
   return (
     <div style={{ height: '100vh' }}>
@@ -69,7 +69,8 @@ interface FormComponentRegistration {
   component: ComponentType<FormComponentProps>  // canvas/preview display
   editor: EditorDefinition // sidebar editor
   options?: FormComponentOption[] // for select/radio/checkbox types
-  providesValue?: boolean  // default true — set false for display-only items (headers, dividers)
+  providesValue?: boolean  // default true — set false for display-only items (headers, dividers, containers)
+  isContainer?: boolean    // when true, renders a nested droppable zone and passes children to the component
 }
 
 interface FormComponentOption {
@@ -92,10 +93,25 @@ editor: {
   placeholder: 'EditorInput',   // text input
   required: 'EditorCheckbox',   // checkbox
   content: 'EditorTextArea',    // textarea
+  layout: { type: 'EditorSelect', options: [  // dropdown select
+    { value: 'grid', label: 'Grid' },
+    { value: 'flex-row', label: 'Flex Row' },
+  ]},
 }
 ```
 
-Available editor primitives: `'EditorInput'`, `'EditorCheckbox'`, `'EditorTextArea'`, `'EditorOptions'`
+Available editor primitives: `'EditorInput'`, `'EditorCheckbox'`, `'EditorTextArea'`, `'EditorOptions'`, `'EditorSelect'`.
+
+Values can be strings (`'EditorInput'`) or objects with options (`{ type: 'EditorSelect', options: [...] }`). The object form is defined by `EditorFieldDescriptor`:
+
+```ts
+interface EditorFieldDescriptor {
+  type: string
+  options?: { value: string; label: string }[]
+}
+```
+
+The `EditorFieldMap` type is `Record<string, string | EditorFieldDescriptor>`.
 
 ### 2. Custom editor component
 
@@ -213,6 +229,7 @@ interface SerializedFormItem {
   settings: FormComponentSettings
   options?: FormComponentOption[]
   value?: unknown
+  children?: SerializedFormItem[]  // nested container children
 }
 ```
 
@@ -222,22 +239,27 @@ All hooks are exported publicly for custom builder layouts:
 
 ```ts
 // Core form items management
-const { formItems, setFormItems, deleteItem, findItem, changeSettings, changeOptions, addItem, reorderItems } = useFormItems(config, initialData?, onChange?)
+const { formItems, setFormItems, deleteItem, findItem, changeSettings, changeOptions, addItem, reorderItems, moveItem } = useFormItems(config, initialData?, onChange?)
+// addItem(key, index, parentId?)
+// reorderItems(from, to, parentId?)
+// moveItem(id, toParentId, toIndex)
 
-// Drag-and-drop wiring (accepts a container ref)
-const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
-
-// Apply drag result to form items
-applyDragEnd(dragResult, addItem, reorderItems, { sourceDroppableId })
+// Drag-and-drop wiring for @dnd-kit
+const { activeId, dragInsertIndex, dragOverParentId, onDragStart, onDragOver, onDragEnd } = useFormBuilderDragDrop(
+  addItem, reorderItems, moveItem,
+  getItemIndex, getParentId, getRootItemCount,
+)
 
 // Local editor state (stores pending edits before applying)
-const { editorState, setEditorField, applyEditorState } = useEditorState()
+const { settings, options, handleOnChangeSettings, handleOnChangeOptions } = useEditorState(
+  id, currentSettings, currentOptions, onChange, onChangeOptions,
+)
 
 // Editor change handler (for EditorFieldMap)
 const handleChange = useEditorChange(setEditorField)
 
 // Options CRUD (for select/checkbox/radio options)
-const { addOption, deleteOption, changeOption, deleteAllOptions } = useOptionsManager(onChangeOptionsCallback)
+const { options, addOption, editOption, deleteOption } = useOptionsManager(currOptions, name, onChange?)
 ```
 
 ## Custom Form Component Pattern
@@ -338,4 +360,4 @@ Override these to match your design system:
 - `react` ^19.0.0
 - `react-dom` ^19.0.0
 
-Runtime deps (installed automatically): `@hello-pangea/dnd`, `uuid`.
+Runtime deps (installed automatically): `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`, `uuid`.

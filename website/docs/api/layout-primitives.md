@@ -23,6 +23,8 @@ The drag-and-drop canvas where form items are placed. Uses `useDroppable` for th
 | `formItems` | `FormItem[]` | Items to render on the canvas |
 | `onDeleteFormItem` | `(payload: { id: string }) => void` | Called when delete action clicked |
 | `onEditFormItem` | `(payload: { id: string }) => void` | Called when edit action clicked |
+| `activeToolboxDragKey` | `string \| null` | Currently dragged toolbox key — enables drop indicator |
+| `dropInsertIndex` | `number \| null` | Target insertion index for the drop indicator |
 
 Must be rendered inside a `DndContext`. Each form item uses `useSortable` for reordering.
 

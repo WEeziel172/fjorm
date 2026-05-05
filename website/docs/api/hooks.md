@@ -22,8 +22,9 @@ function useFormItems(
   findItem: (id: string) => FormItem | undefined
   changeSettings: (id: string, settings: FormComponentSettings) => void
   changeOptions: (id: string, options: FormComponentOption[]) => void
-  addItem: (key: string, destinationIndex: number) => void
-  reorderItems: (startIndex: number, endIndex: number) => void
+  addItem: (key: string, destinationIndex: number, parentId?: string) => void
+  reorderItems: (startIndex: number, endIndex: number, parentId?: string) => void
+  moveItem: (id: string, toParentId: string | undefined, toIndex: number) => void
 }
 ```
 
@@ -60,7 +61,10 @@ function useFormBuilderDragDrop(
   getRootItemCount: () => number,
 ): {
   activeId: string | null
+  dragInsertIndex: number | null
+  dragOverParentId: string | undefined
   onDragStart: (event: DragStartEvent) => void
+  onDragOver: (event: DragOverEvent) => void
   onDragEnd: (event: DragEndEvent) => void
 }
 ```
