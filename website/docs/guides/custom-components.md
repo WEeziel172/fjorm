@@ -113,7 +113,58 @@ const myComponents: FormComponentRegistration[] = [
 ]
 ```
 
-The built-in `formComponents` already has `providesValue: false` on `Header` and `Paragraph`.
+The built-in `formComponents` already has `providesValue: false` on `Header`, `Paragraph`, and `Container`.
+
+## Grid / Layout Containers
+
+Containers let you build multi-column layouts by dragging components into nested drop zones. The built-in `Container` component uses CSS Grid, but you can swap in any UI framework's grid system.
+
+### Framework-specific container examples
+
+```tsx
+// Ant Design — Row/Col
+import { Row, Col } from 'antd'
+function AntRowContainer({ children, settings }: FormComponentProps) {
+  const cols = (settings.columns as number) || 2
+  return (
+    <Row gutter={[16, 16]}>
+      {Children.map(children, child => <Col span={24 / cols}>{child}</Col>)}
+    </Row>
+  )
+}
+
+// Mantine — SimpleGrid
+import { SimpleGrid } from '@mantine/core'
+function MantineGridContainer({ children, settings }: FormComponentProps) {
+  return <SimpleGrid cols={(settings.columns as number) || 2}>{children}</SimpleGrid>
+}
+
+// MUI — Grid
+import { Grid } from '@mui/material'
+function MuiGridContainer({ children, settings }: FormComponentProps) {
+  const cols = (settings.columns as number) || 2
+  return (
+    <Grid container spacing={2}>
+      {Children.map(children, child => <Grid size={12 / cols}>{child}</Grid>)}
+    </Grid>
+  )
+}
+```
+
+Register the container like any other component — use `providesValue: false` since containers don't produce form values:
+
+```ts
+{
+  key: 'Container',
+  icon: FaTh,
+  settings: { label: 'Container', name: 'container', columns: 2 },
+  component: AntRowContainer, // your framework grid component
+  editor: { label: 'EditorInput', name: 'EditorInput', columns: 'EditorInput' },
+  providesValue: false,
+}
+```
+
+The `children` prop contains rendered child form components, automatically passed by the display renderer. The container infrastructure (nested drop zones, tree serialization, recursive rendering) is framework-agnostic.
 
 ## Example Apps
 

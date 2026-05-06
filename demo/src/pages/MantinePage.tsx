@@ -17,6 +17,30 @@ const btnActive = {
   ...btnBase, border: '2px solid #228be6', background: '#e7f5ff', color: '#228be6',
 }
 
+const defaultData: SerializedFormItem[] = [
+  { id: 'h1', key: 'Header', settings: { label: 'Contact Form', name: 'header' } },
+  {
+    id: 'c1', key: 'Container',
+    settings: { label: 'Row: Name', name: 'name-row', columns: 2 },
+    children: [
+      { id: 't1', key: 'TextInput', settings: { label: 'First name', name: 'firstName', required: true } },
+      { id: 't2', key: 'TextInput', settings: { label: 'Last name', name: 'lastName', required: true } },
+    ],
+  },
+  {
+    id: 'c2', key: 'Container',
+    settings: { label: 'Row: Details', name: 'details-row', columns: 2 },
+    children: [
+      { id: 't3', key: 'TextInput', settings: { label: 'Email', name: 'email', required: true } },
+      { id: 's1', key: 'SelectInput', options: [
+        { id: 'o1', title: 'USA', value: 'us' },
+        { id: 'o2', title: 'Canada', value: 'ca' },
+        { id: 'o3', title: 'UK', value: 'uk' },
+      ], settings: { label: 'Country', name: 'country' } },
+    ],
+  },
+]
+
 function MantineExample() {
   const config = new Config()
   config.addComponents(formComponents)
@@ -55,7 +79,7 @@ function MantineExample() {
       {view === 'build' ? (
         <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
           <FormBuilder ref={builderRef} config={config}
-            initialData={formStructure.length > 0 ? formStructure : undefined} />
+            initialData={formStructure.length > 0 ? formStructure : defaultData} />
         </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>

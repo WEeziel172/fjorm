@@ -8,53 +8,49 @@ The five components that `FormBuilder` composes for its layout. Use these direct
 
 ## `FormContainer`
 
-The drag-and-drop canvas where form items are placed.
+The drag-and-drop canvas where form items are placed. Uses `useDroppable` for the root canvas target and `SortableContext` for item reordering.
 
 ```tsx
 <FormContainer
-  droppableId="canvas"
-  placeholderProps={placeholderProps}
   formItems={formItems}
   onDeleteFormItem={({ id }) => {}}
   onEditFormItem={({ id }) => {}}
-  onContainerMount={(element) => {}}
 />
 ```
 
 | Prop | Type | Description |
 |---|---|---|
-| `droppableId` | `string` | Droppable ID for the canvas (required, used by `@hello-pangea/dnd`) |
-| `placeholderProps` | `PlaceholderProps \| null` | Drop indicator position/size from `useDragDrop` |
 | `formItems` | `FormItem[]` | Items to render on the canvas |
 | `onDeleteFormItem` | `(payload: { id: string }) => void` | Called when delete action clicked |
 | `onEditFormItem` | `(payload: { id: string }) => void` | Called when edit action clicked |
-| `onContainerMount` | `(element: HTMLDivElement \| null) => void` | Called when the container DOM element mounts (optional) |
+| `activeToolboxDragKey` | `string \| null` | Currently dragged toolbox key — enables drop indicator |
+| `dropInsertIndex` | `number \| null` | Target insertion index for the drop indicator |
 
-Internally wraps each `FormItem` in a `FormComponentWrapper` inside a `Draggable`.
+Must be rendered inside a `DndContext`. Each form item uses `useSortable` for reordering.
 
 ---
 
 ## `ToolBox`
 
-The component palette — shows available field types that can be dragged onto the canvas.
+The component palette — shows available field types that can be dragged onto the canvas. Each item uses `useDraggable`.
 
 ```tsx
 <ToolBox
-  droppableId="toolbox"
   formComponents={config.components}
   previewForm={isPreview}
   setPreviewForm={setPreview}
+  activeDragKey={activeId}
 />
 ```
 
 | Prop | Type | Description |
 |---|---|---|
-| `droppableId` | `string` | Droppable ID for the toolbox palette (required) |
 | `formComponents` | `FormComponentRegistration[]` | Components to display in the palette |
 | `previewForm` | `boolean` | Whether preview mode is active |
 | `setPreviewForm` | `(preview: boolean) => void` | Toggle preview mode |
+| `activeDragKey` | `string \| null` | Currently dragged component key for dimming |
 
-Renders each registered component as a draggable `ToolboxItem` card.
+Must be rendered inside a `DndContext`.
 
 ---
 

@@ -1,128 +1,105 @@
-import { memo } from 'react'
-import type { ComponentType } from 'react'
-import { Draggable, Droppable } from '@hello-pangea/dnd'
-import { FormComponentWrapper } from './formComponentWrapper'
-import { ErrorBoundary } from '../atoms/errorBoundary'
-import type { FormItem, FormComponentProps, FormComponentOption } from '../../types'
+import { useMemo } from 'react'
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { RecursiveItem } from './FormComponentContainer'
+import type { FormItem } from '../../types'
 
-interface PlaceholderProps {
-  clientHeight: number
-  clientWidth: number
-  clientY: number
-  clientX: number
-}
+const CANVAS_DROPPABLE_ID = 'fjorm-canvas'
+const PLACEHOLDER_ID = '__fjorm-drag-placeholder__'
 
-interface DraggableItemProps {
-  component: ComponentType<FormComponentProps>
+interface PlaceholderItem {
   id: string
-  label: string
-  options?: FormComponentOption[]
-  settings: FormComponentProps['settings']
-  index: number
-  onEditFormItem: (payload: { id: string }) => void
-  onDeleteFormItem: (payload: { id: string }) => void
+  _isPlaceholder: true
 }
 
-const DraggableItem = memo(function DraggableItem({
-  component: Component,
-  id,
-  label,
-  options,
-  settings,
-  index,
-  onEditFormItem,
-  onDeleteFormItem,
-}: DraggableItemProps) {
+function isPlaceholder(item: FormItem | PlaceholderItem): item is PlaceholderItem {
+  return '_isPlaceholder' in item
+}
+
+function DropIndicator() {
   return (
-    <Draggable draggableId={id} index={index}>
-      {(provided) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-        >
-          <ErrorBoundary>
-            <FormComponentWrapper
-              onEdit={onEditFormItem}
-              onDelete={onDeleteFormItem}
-              id={id}
-            >
-              <Component
-                options={options}
-                settings={settings}
-                label={label}
-                id={id}
-              />
-            </FormComponentWrapper>
-          </ErrorBoundary>
-        </div>
-      )}
-    </Draggable>
+    <div
+      style={{
+        height: '3px',
+        background: 'var(--fj-color-primary, #5B6EFF)',
+        borderRadius: '2px',
+        margin: '2px 0',
+        boxShadow: '0 0 4px rgba(91, 110, 255, 0.4)',
+      }}
+    />
   )
-})
+}
 
 export function FormContainer({
-  placeholderProps,
   formItems,
   onDeleteFormItem,
   onEditFormItem,
-  onContainerMount,
-  droppableId,
+  activeToolboxDragKey,
+  activeDragId,
+  dropInsertIndex,
 }: {
-  placeholderProps: PlaceholderProps | null
   formItems: FormItem[]
   onDeleteFormItem: (payload: { id: string }) => void
   onEditFormItem: (payload: { id: string }) => void
-  onContainerMount?: (element: HTMLDivElement | null) => void
-  droppableId: string
+  activeToolboxDragKey?: string | null
+  activeDragId?: string | null
+  dropInsertIndex?: number | null
 }) {
-  return (
-    <Droppable droppableId={droppableId}>
-      {(provided, snapshot) => {
-        const setMergedRef = (element: HTMLDivElement | null) => {
-          provided.innerRef(element)
-          onContainerMount?.(element)
-        }
+  const { setNodeRef, isOver } = useDroppable({
+    id: CANVAS_DROPPABLE_ID,
+    data: { kind: 'canvas-root' },
+  })
 
-        return (
-        <>
-          <div ref={setMergedRef} className="form-container" role="region" aria-label="Form builder canvas">
-            {formItems.length === 0 && (
-              <div className="form-container-empty" aria-live="polite">
-                Drag components here to build your form
-              </div>
-            )}
-            {formItems.length > 0 &&
-              formItems.map((item, index) => (
-                <DraggableItem
+  const displayItems = useMemo(() => {
+    const isDragging = activeDragId ?? activeToolboxDragKey
+    if (!isDragging || dropInsertIndex == null) return formItems
+
+    const placeholder: PlaceholderItem = { _isPlaceholder: true, id: PLACEHOLDER_ID }
+    const result: (FormItem | PlaceholderItem)[] = [...formItems]
+    result.splice(dropInsertIndex, 0, placeholder)
+    return result
+  }, [formItems, activeDragId, activeToolboxDragKey, dropInsertIndex])
+
+  // SortableContext only includes real form item IDs — the placeholder is a pure visual
+  const itemIds = useMemo(() => formItems.map((item) => item.id), [formItems])
+
+  return (
+    <div className="form-container" role="region" aria-label="Form builder canvas" style={{ overflow: 'visible' }}>
+      <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+        <div
+          ref={setNodeRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+            padding: '1.5rem',
+            overflow: 'auto',
+            background: isOver ? 'rgba(91, 110, 255, 0.04)' : undefined,
+            outline: isOver ? '2px dashed var(--fj-color-drop-indicator)' : undefined,
+          }}
+        >
+          {displayItems.length === 0 && (
+            <div className="form-container-empty" aria-live="polite">
+              Drag components here to build your form
+            </div>
+          )}
+          {displayItems.length > 0 &&
+            displayItems.map((item, index) => {
+              if (isPlaceholder(item)) return <DropIndicator key={PLACEHOLDER_ID} />
+              return (
+                <RecursiveItem
                   key={item.id}
-                  component={item.component}
-                  id={item.id}
-                  label={item.settings.label}
-                  options={item.options}
-                  settings={item.settings}
+                  item={item}
                   index={index}
                   onEditFormItem={onEditFormItem}
                   onDeleteFormItem={onDeleteFormItem}
                 />
-              ))}
-            {provided.placeholder}
-            {placeholderProps && snapshot.isDraggingOver && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: placeholderProps.clientY,
-                  left: placeholderProps.clientX,
-                  height: placeholderProps.clientHeight,
-                  marginTop: '0.5rem',
-                  border: '1px dashed blue',
-                  width: placeholderProps.clientWidth,
-                }}
-              />
-            )}
-          </div>
-        </>
-      )}}
-    </Droppable>
+              )
+            })}
+        </div>
+      </SortableContext>
+    </div>
   )
 }

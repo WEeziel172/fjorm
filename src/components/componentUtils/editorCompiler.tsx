@@ -4,22 +4,39 @@ import { EditorInput } from '../molecules/editorInput'
 import { EditorCheckbox } from '../molecules/editorCheckbox'
 import { EditorTextArea } from '../molecules/editorTextArea'
 import { EditorOptions } from '../molecules/editorOptions'
+import { EditorSelect } from '../molecules/editorSelect'
 import { FormComponentEditorContainer } from '../atoms/formComponentEditorContainer'
-import type { FormComponentSettings, FormComponentOption, EditorChangePayload, EditorFieldMap } from '../../types'
+import type {
+  FormComponentSettings,
+  FormComponentOption,
+  EditorChangePayload,
+  EditorFieldMap,
+  EditorFieldDescriptor,
+} from '../../types'
 
 function toLabel(key: string): string {
   return key
     .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, s => s.toUpperCase())
+    .replace(/^./, (s) => s.toUpperCase())
     .replace(/[_-]/g, ' ')
     .trim()
 }
 
+function resolveField(raw: string | EditorFieldDescriptor): {
+  fieldKey: string
+  selectOptions?: { value: string; label: string }[]
+} {
+  if (typeof raw === 'string') return { fieldKey: raw }
+  return { fieldKey: raw.type, selectOptions: raw.options }
+}
+
 function GetEditor({
   fieldKey,
+  selectOptions,
   ...rest
 }: {
   fieldKey: string
+  selectOptions?: { value: string; label: string }[]
   label: string
   name: string
   handleOnChange: (payload: EditorChangePayload) => void
@@ -36,9 +53,14 @@ function GetEditor({
       return <EditorTextArea {...rest} />
     case 'EditorOptions':
       return <EditorOptions {...rest} />
+    case 'EditorSelect':
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return <EditorSelect {...rest} options={selectOptions as any} />
     default:
       if (typeof fieldKey === 'string') {
-        console.warn(`[fjorm] Unknown editor component "${fieldKey}" in EditorFieldMap — falling back to EditorInput`)
+        console.warn(
+          `[fjorm] Unknown editor component "${fieldKey}" in EditorFieldMap — falling back to EditorInput`,
+        )
       }
       return <EditorInput {...rest} />
   }
@@ -70,11 +92,11 @@ export function EditorCompiler({
           key={key}
           label={label}
           handleOnChange={handleOnChange}
-          fieldKey={editorObj[key]}
           name={key}
           settings={settings}
           options={options}
           handleOnChangeOptions={onChangeOptions}
+          {...resolveField(editorObj[key])}
         />
       )
     })

@@ -1,10 +1,11 @@
+import { Children } from 'react'
 import {
   TextField, Select, MenuItem, Typography, Checkbox, FormControlLabel,
-  FormControl, InputLabel, RadioGroup, Radio, Switch, Box, Button,
+  FormControl, InputLabel, RadioGroup, Radio, Switch, Box, Button, Grid,
 } from '@mui/material'
 import {
   FaHeading, FaParagraph, FaFont, FaList, FaCheckSquare,
-  FaHashtag, FaCalendar, FaDotCircle, FaToggleOn, FaAlignLeft,
+  FaHashtag, FaCalendar, FaDotCircle, FaToggleOn, FaAlignLeft, FaTh,
 } from 'react-icons/fa'
 import type { FormComponentRegistration, FormComponentProps, FormConfig, FormConfigProps } from 'fjorm'
 
@@ -113,6 +114,19 @@ function MuiSwitch({ settings, label }: FormComponentProps) {
   )
 }
 
+// --- Grid Container ---
+
+function MuiGridContainer({ children, settings }: FormComponentProps) {
+  const cols = (settings.columns as number) || 2
+  return (
+    <Grid container spacing={2}>
+      {Children.map(children, (child) => (
+        <Grid size={12 / cols}>{child}</Grid>
+      ))}
+    </Grid>
+  )
+}
+
 // --- Component Registry ---
 
 export const formComponents: FormComponentRegistration[] = [
@@ -179,6 +193,15 @@ export const formComponents: FormComponentRegistration[] = [
     settings: { label: 'Toggle', name: 'Switch' },
     component: MuiSwitch,
     editor: { label: 'EditorInput', name: 'EditorInput' },
+  },
+  {
+    key: 'Container',
+    icon: FaTh,
+    isContainer: true,
+    settings: { label: 'Container', name: 'container', columns: 2 },
+    component: MuiGridContainer,
+    editor: { label: 'EditorInput', name: 'EditorInput', columns: 'EditorInput' },
+    providesValue: false,
   },
 ]
 

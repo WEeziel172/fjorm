@@ -1,10 +1,36 @@
-import { useState } from 'react'
-import { Form, Input, Select, Typography, Checkbox, InputNumber, DatePicker, Radio, Switch } from 'antd'
+import { useState, Children } from 'react'
 import {
-  FaHeading, FaParagraph, FaFont, FaList, FaCheckSquare,
-  FaHashtag, FaCalendar, FaDotCircle, FaToggleOn, FaAlignLeft,
+  Form,
+  Input,
+  Select,
+  Typography,
+  Checkbox,
+  InputNumber,
+  DatePicker,
+  Radio,
+  Switch,
+  Row,
+  Col,
+} from 'antd'
+import {
+  FaHeading,
+  FaParagraph,
+  FaFont,
+  FaList,
+  FaCheckSquare,
+  FaHashtag,
+  FaCalendar,
+  FaDotCircle,
+  FaToggleOn,
+  FaAlignLeft,
+  FaTh,
 } from 'react-icons/fa'
-import type { FormComponentRegistration, FormComponentProps, FormConfig, FormConfigProps } from 'fjorm'
+import type {
+  FormComponentRegistration,
+  FormComponentProps,
+  FormConfig,
+  FormConfigProps,
+} from 'fjorm'
 
 const { Title, Paragraph: AntPTypography } = Typography
 const { TextArea } = Input
@@ -15,13 +41,27 @@ export function FormWrapper({ children, onSubmit, ...rest }: FormConfigProps) {
   }
 
   return (
-    <Form layout="vertical" style={{ maxWidth: 640, padding: 24 }} onFinish={handleFinish} {...rest}>
+    <Form
+      layout="vertical"
+      style={{ maxWidth: 640, padding: 24 }}
+      onFinish={handleFinish}
+      {...rest}
+    >
       {children}
       <Form.Item>
-        <button type="submit" style={{
-          padding: '8px 24px', border: 'none', borderRadius: 6,
-          background: '#1677ff', color: '#fff', fontSize: 14, fontWeight: 500, cursor: 'pointer',
-        }}>
+        <button
+          type="submit"
+          style={{
+            padding: '8px 24px',
+            border: 'none',
+            borderRadius: 6,
+            background: '#1677ff',
+            color: '#fff',
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: 'pointer',
+          }}
+        >
           Submit
         </button>
       </Form.Item>
@@ -32,17 +72,28 @@ export function FormWrapper({ children, onSubmit, ...rest }: FormConfigProps) {
 // --- Display Components ---
 
 function AntHeader({ settings }: FormComponentProps) {
-  return <Title level={2} style={{ marginTop: 8 }}>{settings.label}</Title>
+  return (
+    <Title level={2} style={{ marginTop: 8 }}>
+      {settings.label}
+    </Title>
+  )
 }
 
 function AntParagraph({ settings }: FormComponentProps) {
-  return <AntPTypography style={{ whiteSpace: 'pre-line' }}>{(settings.content as string) ?? ''}</AntPTypography>
+  return (
+    <AntPTypography style={{ whiteSpace: 'pre-line' }}>
+      {(settings.content as string) ?? ''}
+    </AntPTypography>
+  )
 }
 
 function AntTextInput({ settings, label }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <Input placeholder={(settings.placeholder as string) ?? ''} />
     </Form.Item>
   )
@@ -50,8 +101,11 @@ function AntTextInput({ settings, label }: FormComponentProps) {
 
 function AntTextArea({ settings, label }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <TextArea rows={4} placeholder={(settings.placeholder as string) ?? ''} />
     </Form.Item>
   )
@@ -59,11 +113,16 @@ function AntTextArea({ settings, label }: FormComponentProps) {
 
 function AntSelect({ settings, label, options }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <Select placeholder="Select...">
         {options?.map((opt) => (
-          <Select.Option key={opt.id} value={opt.value}>{opt.title}</Select.Option>
+          <Select.Option key={opt.id} value={opt.value}>
+            {opt.title}
+          </Select.Option>
         ))}
       </Select>
     </Form.Item>
@@ -72,8 +131,11 @@ function AntSelect({ settings, label, options }: FormComponentProps) {
 
 function AntCheckbox({ settings, label }: FormComponentProps) {
   return (
-    <Form.Item name={settings.name} valuePropName="checked"
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      name={settings.name}
+      valuePropName="checked"
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <Checkbox>{label}</Checkbox>
     </Form.Item>
   )
@@ -81,8 +143,11 @@ function AntCheckbox({ settings, label }: FormComponentProps) {
 
 function AntNumber({ settings, label }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <InputNumber style={{ width: '100%' }} placeholder={(settings.placeholder as string) ?? ''} />
     </Form.Item>
   )
@@ -90,8 +155,11 @@ function AntNumber({ settings, label }: FormComponentProps) {
 
 function AntDate({ settings, label }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <DatePicker style={{ width: '100%' }} />
     </Form.Item>
   )
@@ -99,11 +167,16 @@ function AntDate({ settings, label }: FormComponentProps) {
 
 function AntRadio({ settings, label, options }: FormComponentProps) {
   return (
-    <Form.Item label={label} name={settings.name}
-      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}>
+    <Form.Item
+      label={label}
+      name={settings.name}
+      rules={settings.required ? [{ required: true, message: `${label} is required` }] : undefined}
+    >
       <Radio.Group>
         {options?.map((opt) => (
-          <Radio key={opt.id} value={opt.value}>{opt.title}</Radio>
+          <Radio key={opt.id} value={opt.value}>
+            {opt.title}
+          </Radio>
         ))}
       </Radio.Group>
     </Form.Item>
@@ -115,6 +188,19 @@ function AntSwitch({ settings, label }: FormComponentProps) {
     <Form.Item label={label} name={settings.name} valuePropName="checked">
       <Switch />
     </Form.Item>
+  )
+}
+
+// --- Grid Container ---
+
+function AntRowContainer({ children, settings }: FormComponentProps) {
+  const cols = (settings.columns as number) || 2
+  return (
+    <Row gutter={[16, 16]} style={{ width: '100%' }}>
+      {Children.map(children, (child) => (
+        <Col span={24 / cols}>{child}</Col>
+      ))}
+    </Row>
   )
 }
 
@@ -231,5 +317,17 @@ export const formComponents: FormComponentRegistration[] = [
       name: 'EditorInput',
     },
   },
+  {
+    key: 'Container',
+    icon: FaTh,
+    isContainer: true,
+    settings: { label: 'Container', name: 'container', columns: 2 },
+    component: AntRowContainer,
+    editor: {
+      label: 'EditorInput',
+      name: 'EditorInput',
+      columns: 'EditorInput',
+    },
+    providesValue: false,
+  },
 ]
-

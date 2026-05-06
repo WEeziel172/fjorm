@@ -2,7 +2,7 @@ name: PR Preview
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, next]
     types: [opened, synchronize, reopened]
 
 concurrency:

@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { FormComponentHeaderEditor } from './molecules/formComponentHeaderEditor'
 import { FormComponentParagraphEditor } from './molecules/formComponentParagraphEditor'
 import { FormComponentSelectEditor } from './molecules/formComponentSelectEditor'
@@ -7,6 +7,25 @@ import { FormComponentInput } from './organisms/formComponentInput'
 import { FormComponentParagraph } from './molecules/formComponentParagraph'
 import { FormComponentHeader } from './atoms/formComponentHeader'
 import type { FormComponentRegistration } from '../types'
+
+/** Example layout container — users replace this with their own UI-framework component. */
+function ExampleContainer({ children, settings }: { children: ReactNode; settings: Record<string, unknown> }) {
+  const layout = (settings.layout as string) || 'grid'
+  const columns = Number(settings.columns) || 2
+  const gap = (settings.gap as string) || '0.75rem'
+
+  if (layout === 'flex-row') {
+    return <div style={{ display: 'flex', flexDirection: 'row', gap, flexWrap: 'wrap' }}>{children}</div>
+  }
+  if (layout === 'flex-column') {
+    return <div style={{ display: 'flex', flexDirection: 'column', gap }}>{children}</div>
+  }
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap }}>
+      {children}
+    </div>
+  )
+}
 
 function SvgIcon({
   children,
@@ -57,6 +76,17 @@ const SelectInputIcon: ComponentType = SvgIcon({
   ),
 })
 
+const GridIcon: ComponentType = SvgIcon({
+  children: (
+    <>
+      <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.2" fill="none" />
+      <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.2" fill="none" />
+      <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.2" fill="none" />
+      <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.2" fill="none" />
+    </>
+  ),
+})
+
 export const formComponents: FormComponentRegistration[] = [
   {
     key: 'Header',
@@ -92,5 +122,28 @@ export const formComponents: FormComponentRegistration[] = [
     settings: { label: 'Select', name: 'Select' },
     component: FormComponentSelect,
     editor: FormComponentSelectEditor,
+  },
+  {
+    key: 'Container',
+    icon: GridIcon,
+    isContainer: true,
+    settings: { label: 'Container', name: 'container', layout: 'grid', columns: 2, gap: '0.75rem' },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    component: ExampleContainer as ComponentType<any>,
+    editor: {
+      label: 'EditorInput',
+      name: 'EditorInput',
+      layout: {
+        type: 'EditorSelect',
+        options: [
+          { value: 'grid', label: 'Grid' },
+          { value: 'flex-row', label: 'Flex Row' },
+          { value: 'flex-column', label: 'Flex Column' },
+        ],
+      },
+      columns: 'EditorInput',
+      gap: 'EditorInput',
+    },
+    providesValue: false,
   },
 ]

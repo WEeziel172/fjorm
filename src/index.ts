@@ -6,7 +6,7 @@ export { Config } from './utils/config'
 // --- Hooks ---
 export { useEditorChange } from './utils/useEditorChange'
 export { useFormItems, serializeFormItems, deserializeFormItems } from './utils/useFormItems'
-export { useDragDrop, applyDragEnd } from './utils/useDragDrop'
+export { useFormBuilderDragDrop } from './utils/useDragDrop'
 export { useEditorState } from './utils/useEditorState'
 export { useOptionsManager } from './utils/useOptionsManager'
 
@@ -20,12 +20,17 @@ export { ToolBox } from './components/organisms/ToolBox'
 export { EditorToolBox } from './components/organisms/editorToolBox'
 export { EditorContainer } from './components/organisms/editorContainer'
 export { FormComponentWrapper } from './components/organisms/formComponentWrapper'
+export {
+  FormComponentContainer,
+  RecursiveItem,
+} from './components/organisms/FormComponentContainer'
 
 // --- Editor primitives ---
 export { EditorInput } from './components/molecules/editorInput'
 export { EditorCheckbox } from './components/molecules/editorCheckbox'
 export { EditorTextArea } from './components/molecules/editorTextArea'
 export { EditorOptions } from './components/molecules/editorOptions'
+export { EditorSelect } from './components/molecules/editorSelect'
 export { EditorCompiler } from './components/componentUtils/editorCompiler'
 
 // --- Display primitives (for custom form fields) ---
@@ -58,6 +63,7 @@ export type {
   FormComponentProps,
   EditorDefinition,
   EditorFieldMap,
+  EditorFieldDescriptor,
   FormComponentRegistration,
   FormItem,
   SerializedFormItem,
@@ -65,5 +71,9 @@ export type {
   FormConfig,
   EditorChangePayload,
   DragResult,
+  DragEndPayload,
+  DndActive,
+  DndOver,
+  DndItemData,
   FormBuilderHandle,
 } from './types'

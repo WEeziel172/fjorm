@@ -1,9 +1,12 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { DragDropContext } from '@hello-pangea/dnd'
-import type { DropResult } from '@hello-pangea/dnd'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import {
+  DndContext, DragOverlay, PointerSensor, useSensor, useSensors,
+  closestCorners, pointerWithin,
+  type CollisionDetection,
+} from '@dnd-kit/core'
 import {
   Config, ToolBox, FormContainer, EditorToolBox,
-  useFormItems, useDragDrop, applyDragEnd,
+  useFormItems, useFormBuilderDragDrop,
   serializeFormItems, deserializeFormItems,
   type FormItem,
 } from 'fjorm'
@@ -11,6 +14,24 @@ import type { FormComponentRegistration } from 'fjorm'
 import { customComponents } from './customComponents'
 
 const STORAGE_KEY = 'fjorm-custom-builder'
+
+const customCollisionDetection: CollisionDetection = (args) => {
+  const closest = closestCorners(args)
+  const pointer = pointerWithin(args)
+
+  const containers = pointer.filter((c) => {
+    const dc = args.droppableContainers.find((d) => d.id === c.id)
+    const kind = (dc?.data?.current as { kind?: string } | undefined)?.kind
+    return kind === 'container-dropzone'
+  })
+  const canvas = pointer.filter((c) => {
+    const dc = args.droppableContainers.find((d) => d.id === c.id)
+    const kind = (dc?.data?.current as { kind?: string } | undefined)?.kind
+    return kind === 'canvas-root'
+  })
+
+  return [...containers, ...closest, ...canvas]
+}
 
 interface Props {
   onFormChange?: (items: FormItem[]) => void
@@ -24,14 +45,41 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
   })[0]
 
   const {
-    formItems, setFormItems, addItem, reorderItems,
+    formItems, setFormItems, addItem, reorderItems, moveItem,
     deleteItem, findItem, changeSettings, changeOptions,
   } = useFormItems(config, undefined, (serialized) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized))
   })
 
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
+  const getItemIndex = useCallback(
+    (id: string, parentId?: string) => {
+      if (parentId) {
+        const parent = findItem(parentId)
+        return parent?.children?.findIndex((c) => c.id === id) ?? -1
+      }
+      return formItems.findIndex((item) => item.id === id)
+    },
+    [findItem, formItems],
+  )
+
+  const formItemsRef = useRef(formItems)
+  useEffect(() => { formItemsRef.current = formItems }, [formItems])
+
+  const getParentId = useCallback(
+    (id: string): string | undefined => {
+      for (const item of formItemsRef.current) {
+        if (item.children?.some((c) => c.id === id)) return item.id
+      }
+      return undefined
+    },
+    [],
+  )
+
+  const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+    addItem, reorderItems, moveItem,
+    getItemIndex, getParentId, () => formItemsRef.current.length,
+  )
+
   const [editingItem, setEditingItem] = useState<FormItem | null>(null)
   const [importJson, setImportJson] = useState('')
 
@@ -52,9 +100,19 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
     onFormChange?.(formItems)
   }, [formItems, onFormChange])
 
-  const onDragEnd = useCallback((result: DropResult) => {
-    applyDragEnd(result as any, addItem, reorderItems, { sourceDroppableId: 'toolbox' })
-  }, [addItem, reorderItems])
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+  )
+
+  const toolboxKeys = useMemo(
+    () => new Set(config.components.map((c) => c.key)),
+    [config.components],
+  )
+
+  const activeComponentKey = activeId && toolboxKeys.has(activeId) ? activeId : null
+  const draggingComponent = activeComponentKey
+    ? config.getComponent(activeComponentKey)
+    : undefined
 
   const currentEditor = editingItem
     ? (findItem(editingItem.id) ?? editingItem)
@@ -113,17 +171,19 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
 
       {/* Main area */}
       <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-        <DragDropContext onDragEnd={onDragEnd} onDragUpdate={onDragUpdate}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={customCollisionDetection}
+          onDragStart={onDragStart}
+          onDragEnd={onDragEnd}
+        >
           <FormContainer
             formItems={formItems}
-            placeholderProps={placeholderProps}
-            droppableId="list"
             onEditFormItem={({ id }) => {
               const item = findItem(id)
               if (item) setEditingItem(item)
             }}
             onDeleteFormItem={({ id }) => deleteItem(id)}
-            onContainerMount={(el) => { containerRef.current = el }}
           />
           {editingItem ? (
             <EditorToolBox
@@ -137,10 +197,22 @@ export default function CustomFormBuilder({ onFormChange }: Props) {
               formComponents={customComponents as FormComponentRegistration[]}
               setPreviewForm={() => {}}
               previewForm={false}
-              droppableId="toolbox"
+              activeDragKey={activeId}
             />
           )}
-        </DragDropContext>
+          <DragOverlay dropAnimation={null}>
+            {draggingComponent ? (
+              <div style={{ opacity: 0.85, cursor: 'grabbing' }}>
+                <draggingComponent.component
+                  settings={draggingComponent.settings}
+                  label={draggingComponent.settings.label}
+                  id="drag-overlay"
+                  options={draggingComponent.options}
+                />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
     </div>
   )

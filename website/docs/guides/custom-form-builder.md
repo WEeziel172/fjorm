@@ -11,20 +11,21 @@ This guide walks through building a three-column builder — toolbox on the left
 ## Full example
 
 ```tsx
-import { useState, useCallback, useRef } from 'react'
-import { DragDropContext } from '@hello-pangea/dnd'
+import { useState, useCallback } from 'react'
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import {
   Config,
   useFormItems,
-  useDragDrop,
-  applyDragEnd,
+  useFormBuilderDragDrop,
+  serializeFormItems,
   FormContainer,
   ToolBox,
+  ToolboxItem,
   EditorToolBox,
   FormDisplay,
   type FormItem,
   type SerializedFormItem,
-  type DragResult,
+  type FormConfig,
 } from 'fjorm'
 import 'fjorm/dist/index.css'
 
@@ -33,16 +34,17 @@ export function ThreeColumnBuilder({
   initialData,
   onChange,
   onSubmit,
+  form,
 }: {
   config: Config
   initialData?: SerializedFormItem[]
   onChange?: (data: SerializedFormItem[]) => void
   onSubmit?: (data: Record<string, unknown>) => void
+  form?: FormConfig
 }) {
   // --- State ---
   const [currentEditor, setCurrentEditor] = useState<FormItem | null>(null)
   const [previewForm, setPreviewForm] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
 
   // --- Form items CRUD ---
   const {
@@ -53,15 +55,30 @@ export function ThreeColumnBuilder({
     changeOptions,
     addItem,
     reorderItems,
+    moveItem,
   } = useFormItems(config, initialData, onChange)
 
   // --- Drag & drop ---
-  const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
+  const getItemIndex = useCallback(
+    (id: string, parentId?: string) => {
+      if (parentId) return findItem(parentId)?.children?.findIndex(c => c.id === id) ?? -1
+      return formItems.findIndex(item => item.id === id)
+    },
+    [formItems, findItem],
+  )
+  const getParentId = useCallback((id: string) => {
+    for (const item of formItems) {
+      if (item.children?.some(c => c.id === id)) return item.id
+    }
+  }, [formItems])
 
-  // --- Drag handler ---
-  const onDragEnd = useCallback(
-    (d: DragResult) => { applyDragEnd(d, addItem, reorderItems) },
-    [addItem, reorderItems],
+  const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+    addItem, reorderItems, moveItem,
+    getItemIndex, getParentId, () => formItems.length,
+  )
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   )
 
   // --- Edit/delete handlers ---
@@ -72,7 +89,6 @@ export function ThreeColumnBuilder({
     },
     [currentEditor?.id, deleteItem],
   )
-
   const onEditFormItem = useCallback(
     ({ id }: { id: string }) => {
       const item = findItem(id)
@@ -82,53 +98,38 @@ export function ThreeColumnBuilder({
   )
 
   // --- Render ---
-  const serialized = formItems.map(({ id, key, settings, options }) =>
-    ({ id, key, settings, options }))
-
   return (
-    <DragDropContext onDragUpdate={onDragUpdate} onDragEnd={onDragEnd}>
+    <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
       <div style={{ display: 'flex', height: '100vh' }}>
-        {/* Left: Toolbox */}
         <div style={{ width: 280, flexShrink: 0 }}>
-          <ToolBox
-            formComponents={config.components}
-            previewForm={previewForm}
-            setPreviewForm={setPreviewForm}
-          />
+          <ToolBox formComponents={config.components} previewForm={previewForm}
+            setPreviewForm={setPreviewForm} activeDragKey={activeId} />
         </div>
-
-        {/* Center: Canvas / Preview */}
-        <div ref={containerRef} style={{ flex: 1 }}>
+        <div style={{ flex: 1 }}>
           {previewForm ? (
-            <FormDisplay
-              form={form}
-              config={config}
-              data={serialized}
-              onSubmit={onSubmit}
-            />
+            <FormDisplay form={form} config={config}
+              data={serializeFormItems(formItems)} onSubmit={onSubmit} />
           ) : (
-            <FormContainer
-              placeholderProps={placeholderProps}
-              formItems={formItems}
-              onDeleteFormItem={onDeleteFormItem}
-              onEditFormItem={onEditFormItem}
-            />
+            <FormContainer formItems={formItems}
+              onDeleteFormItem={onDeleteFormItem} onEditFormItem={onEditFormItem} />
           )}
         </div>
-
-        {/* Right: Editor panel */}
         {currentEditor && (
           <div style={{ width: 300, flexShrink: 0 }}>
-            <EditorToolBox
-              currentEditor={currentEditor}
+            <EditorToolBox currentEditor={currentEditor}
               onClose={() => setCurrentEditor(null)}
-              onChangeFormItemSettings={changeSettings}
-              onChangeFormItemOptions={changeOptions}
-            />
+              onChangeFormItemSettings={({ id, settings }) => changeSettings(id, settings)}
+              onChangeFormItemOptions={({ id, options }) => changeOptions(id, options)} />
           </div>
         )}
       </div>
-    </DragDropContext>
+      <DragOverlay dropAnimation={null}>
+        {activeId && config.getComponent(activeId)?.icon ? (
+          <ToolboxItem icon={config.getComponent(activeId)!.icon!}
+            name={config.getComponent(activeId)!.settings.label} />
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 }
 ```
@@ -152,14 +153,18 @@ const {
   deleteItem,
   changeSettings,
   reorderItems,
+  moveItem,
 } = useFormItems(config, initialData, onChange)
 
-const { placeholderProps, onDragUpdate } = useDragDrop(containerRef)
+const { activeId, onDragStart, onDragEnd } = useFormBuilderDragDrop(
+  addItem, reorderItems, moveItem,
+  getItemIndex, getParentId, () => formItems.length,
+)
 
 // Render formItems with your own UI library
 // Wire addItem to a custom palette
 // Wire deleteItem to your own delete buttons
-// Wire reorderItems to your own drag-and-drop backend
+// Wire onDragStart/onDragEnd to DndContext
 ```
 
 The hooks are the state layer — the layout components are just one way to render them.

@@ -71,15 +71,17 @@ interface FormComponentRegistration<
 > {
   key: string
   settings: TSettings
-  icon: ComponentType
+  icon?: ComponentType
   component: ComponentType<FormComponentProps>
   editor: EditorDefinition
   options?: FormComponentOption[]
   providesValue?: boolean
+  /** When true, renders a nested droppable zone for child items. */
+  isContainer?: boolean
 }
 ```
 
-Set `providesValue: false` for display-only components (headers, paragraphs, dividers) to exclude them from form submissions. Defaults to `true` when omitted.
+Set `providesValue: false` for display-only components (headers, paragraphs, dividers, containers) to exclude them from form submissions. Defaults to `true` when omitted. Set `isContainer: true` to enable nested drop zones — the component receives `children` from the renderer.
 
 ## `SerializedFormItem`
 
@@ -92,6 +94,7 @@ interface SerializedFormItem {
   settings: FormComponentSettings
   options?: FormComponentOption[]
   value?: unknown
+  children?: SerializedFormItem[]
 }
 ```
 
@@ -134,6 +137,7 @@ A registered component instance placed on the canvas. Extends `FormComponentRegi
 interface FormItem extends FormComponentRegistration {
   id: string
   value?: unknown
+  children?: FormItem[]
 }
 ```
 
@@ -142,7 +146,7 @@ interface FormItem extends FormComponentRegistration {
 Declarative editor definition mapping setting keys to editor primitives.
 
 ```ts
-type EditorFieldMap = Record<string, string>
+type EditorFieldMap = Record<string, string | EditorFieldDescriptor>
 ```
 
 Example: `{ label: 'EditorInput', required: 'EditorCheckbox', content: 'EditorTextArea' }`
@@ -166,15 +170,37 @@ interface EditorChangePayload {
 }
 ```
 
-## `DragResult`
+## `DndItemData`
 
-The result object from `@hello-pangea/dnd`'s `onDragEnd` callback.
+Data attached to draggable/droppable elements via @dnd-kit's `data` prop.
 
 ```ts
-interface DragResult {
-  draggableId: string
-  source: { droppableId: string; index: number }
-  destination?: { droppableId: string; index: number } | null
+interface DndItemData {
+  kind: 'toolbox-item' | 'canvas-item' | 'container-dropzone' | 'canvas-root' | 'drop-indicator'
+  componentKey?: string
+  containerId?: string
+}
+```
+
+## `DragEndPayload`
+
+Shape passed to `useFormBuilderDragDrop`'s `onDragEnd` handler after extracting from @dnd-kit's event.
+
+```ts
+interface DragEndPayload {
+  active: DndActive
+  over: DndOver
+}
+```
+
+## `EditorFieldDescriptor`
+
+Object form for editor fields that need options (e.g., `EditorSelect`).
+
+```ts
+interface EditorFieldDescriptor {
+  type: string
+  options?: { value: string; label: string }[]
 }
 ```
 
