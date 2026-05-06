@@ -2,7 +2,7 @@
 
 > Modular drag-and-drop form builder for React — bring your own components.
 
-<video src="assets/fjorm_demonstration.mp4" controls width="100%"></video>
+<img src="assets/fjorm_demonstration.gif" alt="Fjorm demo video" width="100%" />
 
 [![CI](https://github.com/WEeziel172/fjorm/actions/workflows/ci.yml/badge.svg)](https://github.com/WEeziel172/fjorm/actions/workflows/ci.yml)
 [![docs](https://img.shields.io/badge/docs-GitHub_Pages-34a853.svg?logo=github)](https://weeziel172.github.io/fjorm/)
